@@ -17,7 +17,7 @@ const LoginPage = () => {
       >
 
         {/* Form */}
-        <div className="w-full lg:w-[480px] shrink-0 px-10 py-14">
+        <div className="w-full lg:w-120 shrink-0 px-10 py-14">
           <img
             src={images.loginPageLogo}
             alt="Shafmet logo"
@@ -90,7 +90,7 @@ const LoginPage = () => {
           <img
             src={images.LoginPageImage}
             alt="Login illustration"
-            className="w-full max-h-[500px] object-contain"
+            className="w-full max-h-125 object-contain"
           />
         </div>
 
