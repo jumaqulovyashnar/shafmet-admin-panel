@@ -7,97 +7,95 @@ const LoginPage = () => {
 
   return (
     <section className="min-h-screen w-full flex items-center justify-center bg-base-100 px-6 sm:px-12">
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-20 w-full max-w-6xl">
+
+      {/* Katta Card */}
+      <div
+        className="flex flex-col lg:flex-row w-full max-w-5xl rounded-2xl overflow-hidden bg-white"
+        style={{
+          boxShadow: "0 2px 12px rgba(0, 0, 0, 0.06)",
+        }}
+      >
 
         {/* Form */}
-        <div className="flex flex-col gap-6 w-full max-w-md">
-          <div>
-            <img
-              src={images.loginPageLogo}
-              alt="Shafmet logo"
-              className="w-60"
-            />
-          </div>
+        <div className="w-full lg:w-[480px] shrink-0 px-10 py-14">
+          <img
+            src={images.loginPageLogo}
+            alt="Shafmet logo"
+            className="w-52 mb-7"
+          />
 
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">
-              Login Bo'limi
-            </h1>
+          <h1 className="text-4xl font-bold mb-3">
+            Login Bo'limi
+          </h1>
 
-            <p className="mt-2 text-sm leading-relaxed text-base-content/60">
-              Siz login qilishingiz uchun admin bo'lishingiz va sizda maxsus kod
-              bo'lishi kerak.
-            </p>
-          </div>
+          <p className="text-sm text-gray-900 leading-relaxed mb-7">
+            Siz login qilishingiz uchun admin bo'lishingiz va sizda maxsus kod
+            bo'lishi kerak.
+          </p>
 
-          <form className="flex flex-col gap-5">
+          <form className="space-y-5">
+
             {/* Telefon */}
-            <div className="w-full">
+            <div className="relative">
               <label
                 htmlFor="phone"
-                className="block mb-2 text-sm font-medium text-base-content"
+                className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-800 z-10"
               >
                 Telefon Raqamingiz
               </label>
-
               <input
                 id="phone"
                 type="tel"
                 placeholder="+998 90 555 20 33"
-                className="w-full border-2 border-blue-500 rounded-2xl px-4 py-3 outline-none focus:border-blue-700 transition-colors"
+                className="w-full h-13 border border-gray-400 rounded px-4 text-sm outline-none focus:border-blue-600 transition-colors"
               />
             </div>
 
             {/* Parol */}
-            <div className="w-full">
+            <div className="relative">
               <label
                 htmlFor="password"
-                className="block mb-2 text-sm font-medium text-base-content"
+                className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-800 z-10"
               >
                 Parolingiz
               </label>
-
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="************"
-                  className="w-full border-2 border-blue-500 rounded-2xl pl-4 pr-12 py-3 outline-none focus:border-blue-700 transition-colors"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content"
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              </div>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="************"
+                className="w-full h-13 border border-gray-400 rounded px-4 pr-12 text-sm outline-none focus:border-blue-600 transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-800 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
+            {/* Button */}
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 rounded-2xl transition-colors"
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded transition-colors"
             >
               Submit
             </button>
+
           </form>
         </div>
 
         {/* Rasm */}
-        <div className="hidden lg:flex items-center justify-center w-full max-w-xl">
+        <div className="hidden lg:flex items-center justify-center flex-1 bg-blue-50 p-8">
           <img
             src={images.LoginPageImage}
             alt="Login illustration"
-            className="w-full object-contain"
+            className="w-full max-h-[500px] object-contain"
           />
         </div>
 
       </div>
+
     </section>
   )
 }
