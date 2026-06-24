@@ -39,7 +39,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'bg-white border-r border-gray-100 flex flex-col h-full shrink-0 transition-all duration-300',
+        'bg-white border-r border-gray-100 flex flex-col h-full shrink-0 transition-all duration-300 relative z-40',
         collapsed ? 'w-[68px]' : 'w-56'
       )}
     >
@@ -133,17 +133,29 @@ export default function Sidebar() {
           )}
         </button>
 
-        {/* Logout modal - opens from right */}
+        {/* Logout modal - opens from right with shadcn style */}
         {showLogout && !collapsed && (
-          <div className="absolute right-full bottom-0 mb-0 mr-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2 min-w-[160px]">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors"
-            >
-              <LogOut size={17} className="shrink-0" />
-              <span>Chiqish</span>
-            </button>
-          </div>
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/20 z-50"
+              onClick={() => setShowLogout(false)}
+            />
+
+            {/* Modal */}
+            <div className="fixed left-56 bottom-8 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in slide-in-from-left-2 duration-200 w-64">
+              {/* Logout Button */}
+              <div className="p-2">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[14px] font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors group"
+                >
+                  <LogOut size={18} className="shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Chiqish</span>
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </aside>

@@ -32,7 +32,7 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
                 <DialogHeader>
                     <DialogTitle>
                         Yangi Ro'l{' '}
-                        <span className="text-blue-500">Qo'shish</span>
+                        <span className="text-[#64b5f6]">Qo'shish</span>
                     </DialogTitle>
                 </DialogHeader>
 
@@ -64,14 +64,14 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
                     </div>
 
                     {/* Diagrammada ko'rinishi toggle */}
-                    <div className="flex items-center justify-between bg-blue-50 rounded-xl px-4 py-3.5">
+                    <div className="flex items-center justify-between bg-[#e3f2fd] rounded-xl px-4 py-3.5">
                         <span className="text-[13px] text-gray-700 font-medium">
                             Diagrammada Ko'rinishi
                         </span>
                         <button
                             type="button"
                             onClick={() => set('showInDiagram', !form.showInDiagram)}
-                            className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${form.showInDiagram ? 'bg-blue-500' : 'bg-gray-300'
+                            className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${form.showInDiagram ? 'bg-[#64b5f6]' : 'bg-gray-300'
                                 }`}
                         >
                             <span
@@ -84,7 +84,7 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
                     <div className="flex justify-end pt-1">
                         <Button
                             onClick={handleCreate}
-                            className="bg-blue-600 hover:bg-blue-700 h-10 px-8 rounded-xl text-[13px] font-semibold"
+                            className="bg-[#64b5f6] hover:bg-[#42a5f5] h-10 px-8 rounded-xl text-[13px] font-semibold"
                         >
                             Yaratish
                         </Button>

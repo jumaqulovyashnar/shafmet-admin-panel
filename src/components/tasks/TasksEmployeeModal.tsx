@@ -55,7 +55,7 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1.5 text-xs h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                            className="gap-1.5 text-xs h-8 text-[#64b5f6] border-[#64b5f6] hover:bg-[#64b5f6]/10"
                             onClick={() => setShowUmumiy(true)}
                         >
                             Bo'linga Topshiriq Berish
@@ -86,7 +86,7 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
                                         <td className="py-2.5 px-3">
                                             <button
                                                 onClick={() => setAssignTarget(emp)}
-                                                className="w-8 h-8 rounded-md bg-blue-400 hover:bg-blue-500 text-white font-bold text-lg flex items-center justify-center transition-colors"
+                                                className="w-8 h-8 rounded-md bg-[#64b5f6] hover:bg-[#42a5f5] text-white font-bold text-lg flex items-center justify-center transition-colors"
                                             >
                                                 +
                                             </button>

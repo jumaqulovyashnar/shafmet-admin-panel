@@ -48,7 +48,7 @@ export default function TasksPage() {
                             {dept.icon}
                         </div>
                         <div>
-                            <h3 className="font-semibold text-gray-900 text-base group-hover:text-blue-600 transition-colors">
+                            <h3 className="font-semibold text-gray-900 text-base group-hover:text-[#64b5f6] transition-colors">
                                 {dept.title}
                             </h3>
                             <p className="text-xs text-gray-400 mt-1">{dept.subtitle}</p>

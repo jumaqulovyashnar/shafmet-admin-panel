@@ -32,7 +32,7 @@ export default function TaskAssignModal({ open, onClose, employeeName }: TaskAss
         <DialogHeader>
           <DialogTitle>
             Topshiriq Berish{' '}
-            <span className={isUmumiy ? 'text-blue-400' : 'text-blue-500'}>
+            <span className="text-[#64b5f6]">
               {isUmumiy ? 'Umumiy' : 'Hodimga'}
             </span>
           </DialogTitle>
@@ -66,7 +66,7 @@ export default function TaskAssignModal({ open, onClose, employeeName }: TaskAss
             <label className="text-xs text-gray-600 mb-1 block">Kategoriya</label>
             <div className="relative">
               <select
-                className="w-full h-9 border border-gray-300 rounded-md px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-9 border border-gray-300 rounded-md px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#64b5f6]"
                 value={form.category}
                 onChange={(e) => set('category', e.target.value)}
               >
@@ -119,13 +119,11 @@ export default function TaskAssignModal({ open, onClose, employeeName }: TaskAss
             <button
               type="button"
               onClick={() => set('permanent', !form.permanent)}
-              className={`relative w-10 h-5 rounded-full transition-colors ${
-                form.permanent ? 'bg-blue-500' : 'bg-gray-300'
-              }`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${form.permanent ? 'bg-blue-500' : 'bg-gray-300'
+                }`}
             >
-              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${
-                form.permanent ? 'left-5' : 'left-0.5'
-              }`} />
+              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${form.permanent ? 'left-5' : 'left-0.5'
+                }`} />
             </button>
           </div>
 

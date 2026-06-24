@@ -38,7 +38,7 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
             <div className="flex items-center justify-between mb-1">
                 <div>
                     <h3 className="font-semibold text-gray-900">Barcha Xodimlar</h3>
-                    <p className="text-xs text-blue-600 mt-0.5">umumiy faolliglar</p>
+                    <p className="text-xs text-[#64b5f6] mt-0.5">umumiy faolliglar</p>
                 </div>
                 <div className="flex items-center gap-3">
                     {/* Search */}
@@ -101,7 +101,7 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
                                 <tr
                                     key={emp.id}
                                     onClick={() => setSelectedEmployee(emp)}
-                                    className="border-b border-gray-50 hover:bg-blue-50 transition-colors cursor-pointer"
+                                    className="border-b border-gray-50 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
                                 >
                                     <td className="py-3 px-3 font-medium text-gray-800 text-sm">{emp.name}</td>
                                     <td className="py-3 px-3 text-gray-500 text-xs">{emp.location}</td>

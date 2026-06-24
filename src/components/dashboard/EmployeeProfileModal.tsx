@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Mail, Phone, Calendar, Clock, ClipboardList, Timer, CheckCircle2, AlertCircle, X } from 'lucide-react'
+import { Mail, Phone, Calendar, Clock, ClipboardList, BarChart2, Wallet, CheckCircle2, AlertCircle, Loader, X } from 'lucide-react'
 import type { Employee } from '@/types/dashboard'
 
 interface EmployeeProfileModalProps {
@@ -11,7 +11,6 @@ interface EmployeeProfileModalProps {
 export default function EmployeeProfileModal({ open, onClose, employee }: EmployeeProfileModalProps) {
     if (!employee) return null
 
-    // Mock statistika - real API'dan kelishi kerak
     const stats = {
         jamiVazifalar: 12,
         bajarilmoqda: 5,
@@ -19,67 +18,74 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
         muddatOtgan: 2,
     }
 
+    const initials = employee.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[700px] p-0 max-h-[90vh] overflow-hidden">
-                {/* Close button */}
-                <button
-                    onClick={onClose}
-                    className="absolute right-4 top-4 rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors z-50"
-                >
-                    <X size={20} />
-                </button>
+            <DialogContent className="sm:max-w-[620px] p-0 overflow-hidden rounded-2xl" hideClose>
+                {/* Header */}
+                <div className="flex items-center gap-4 px-6 py-5 border-b border-gray-100 relative">
+                    <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-800 font-medium text-lg shrink-0">
+                        {initials}
+                    </div>
+                    <div>
+                        <p className="text-[17px] font-medium text-gray-900 mb-0.5">{employee.name}</p>
+                        <p className="text-[13px] text-gray-500">{employee.phone} · IT bo'limi</p>
+                        <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-800 text-[11px] font-medium px-2.5 py-1 rounded-full mt-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-600 inline-block" />
+                            Ishda
+                        </span>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="absolute right-4 top-4 w-8 h-8 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
 
-                <div className="overflow-y-auto max-h-[90vh] p-6">
-                    {/* Stats cards */}
-                    <div className="mb-6">
-                        <div className="grid grid-cols-4 gap-3">
-                            <div className="bg-blue-50 rounded-2xl p-3 text-center border border-blue-100">
-                                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mx-auto mb-2">
-                                    <ClipboardList className="text-white" size={18} />
+                <div className="px-6 py-5 space-y-5 overflow-y-auto max-h-[72vh]">
+                    {/* Stats */}
+                    <div>
+                        <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-3">Vazifalar holati</p>
+                        <div className="grid grid-cols-4 gap-2.5">
+                            {[
+                                { icon: ClipboardList, label: 'Jami', value: stats.jamiVazifalar, bg: 'bg-blue-50', iconBg: 'bg-blue-100', text: 'text-blue-700' },
+                                { icon: Loader, label: 'Jarayonda', value: stats.bajarilmoqda, bg: 'bg-amber-50', iconBg: 'bg-amber-100', text: 'text-amber-700' },
+                                { icon: CheckCircle2, label: 'Bajarildi', value: stats.bajarildi, bg: 'bg-green-50', iconBg: 'bg-green-100', text: 'text-green-700' },
+                                { icon: AlertCircle, label: "Muddati o'tdi", value: stats.muddatOtgan, bg: 'bg-red-50', iconBg: 'bg-red-100', text: 'text-red-700' },
+                            ].map(({ icon: Icon, label, value, bg, iconBg, text }) => (
+                                <div key={label} className={`${bg} rounded-2xl p-3 text-center border border-white`}>
+                                    <div className={`w-8 h-8 ${iconBg} rounded-[10px] flex items-center justify-center mx-auto mb-2`}>
+                                        <Icon className={text} size={16} />
+                                    </div>
+                                    <p className={`text-[22px] font-medium ${text} leading-none mb-1`}>{value}</p>
+                                    <p className="text-[11px] text-gray-500 leading-tight">{label}</p>
                                 </div>
-                                <p className="text-xl font-bold text-gray-900 mb-0.5">{stats.jamiVazifalar}</p>
-                                <p className="text-[10px] text-gray-600 leading-tight">Jami vazifalar</p>
-                            </div>
-                            <div className="bg-amber-50 rounded-2xl p-3 text-center border border-amber-100">
-                                <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center mx-auto mb-2">
-                                    <Timer className="text-white" size={18} />
-                                </div>
-                                <p className="text-xl font-bold text-gray-900 mb-0.5">{stats.bajarilmoqda}</p>
-                                <p className="text-[10px] text-gray-600 leading-tight">Bajarilmoqda</p>
-                            </div>
-                            <div className="bg-green-50 rounded-2xl p-3 text-center border border-green-100">
-                                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-2">
-                                    <CheckCircle2 className="text-white" size={18} />
-                                </div>
-                                <p className="text-xl font-bold text-gray-900 mb-0.5">{stats.bajarildi}</p>
-                                <p className="text-[10px] text-gray-600 leading-tight">Bajarildi</p>
-                            </div>
-                            <div className="bg-red-50 rounded-2xl p-3 text-center border border-red-100">
-                                <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center mx-auto mb-2">
-                                    <AlertCircle className="text-white" size={18} />
-                                </div>
-                                <p className="text-xl font-bold text-gray-900 mb-0.5">{stats.muddatOtgan}</p>
-                                <p className="text-[10px] text-gray-600 leading-tight">Muddat o'tgan</p>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Contact information */}
-                    <div className="mb-5">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Aloqa ma'lumotlari</h3>
-                        <div className="space-y-2.5">
-                            <div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3 border border-blue-100">
-                                <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
-                                    <Phone className="text-white" size={18} />
+                    {/* Contacts */}
+                    <div>
+                        <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-3">Aloqa</p>
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-100">
+                                <div className="w-[34px] h-[34px] rounded-[9px] bg-blue-100 flex items-center justify-center shrink-0">
+                                    <Phone className="text-blue-700" size={16} />
                                 </div>
-                                <span className="text-gray-800 text-[15px] font-medium">{employee.phone}</span>
+                                <span className="text-[14px] text-gray-800">{employee.phone}</span>
                             </div>
-                            <div className="flex items-center gap-3 bg-purple-50 rounded-lg p-3 border border-purple-100">
-                                <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center shrink-0">
-                                    <Mail className="text-white" size={18} />
+                            <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-100">
+                                <div className="w-[34px] h-[34px] rounded-[9px] bg-purple-100 flex items-center justify-center shrink-0">
+                                    <Mail className="text-purple-700" size={16} />
                                 </div>
-                                <span className="text-gray-800 text-[15px] font-medium">
+                                <span className="text-[14px] text-gray-800">
                                     {employee.name.toLowerCase().replace(/\s+/g, '.')}@example.com
                                 </span>
                             </div>
@@ -88,35 +94,38 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
 
                     {/* Work info */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Ish ma'lumotlari</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-gray-50 rounded-lg p-3.5 border border-gray-200">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <Clock className="text-blue-500" size={15} />
-                                    <span className="text-[11px] text-gray-600 font-medium">Kelgan vaqt</span>
+                        <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-3">Ish ma'lumotlari</p>
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <Clock className="text-gray-400" size={13} />
+                                    <span className="text-[11px] text-gray-500">Kelgan vaqt</span>
                                 </div>
-                                <p className="text-[16px] font-bold text-gray-900">{employee.arrivalTime}</p>
+                                <p className="text-[16px] font-medium text-gray-900">{employee.arrivalTime}</p>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3.5 border border-gray-200">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <Calendar className="text-green-500" size={15} />
-                                    <span className="text-[11px] text-gray-600 font-medium">Ishga kirgan sana</span>
+                            <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <Calendar className="text-gray-400" size={13} />
+                                    <span className="text-[11px] text-gray-500">Ishga kirgan</span>
                                 </div>
-                                <p className="text-[16px] font-bold text-gray-900">12.03.2023</p>
+                                <p className="text-[16px] font-medium text-gray-900">12.03.2023</p>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3.5 border border-gray-200">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <span className="text-[11px] text-gray-600 font-medium">💰 Balans</span>
+                            <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <Wallet className="text-gray-400" size={13} />
+                                    <span className="text-[11px] text-gray-500">Balans</span>
                                 </div>
-                                <p className="text-[16px] font-bold text-gray-900">
-                                    {employee.balance.toLocaleString()} so'm
-                                </p>
+                                <p className="text-[16px] font-medium text-gray-900">{employee.balance.toLocaleString()} so'm</p>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3.5 border border-gray-200">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <span className="text-[11px] text-gray-600 font-medium">📊 Faolligi</span>
+                            <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <BarChart2 className="text-gray-400" size={13} />
+                                    <span className="text-[11px] text-gray-500">Faolligi</span>
                                 </div>
-                                <p className="text-[16px] font-bold text-gray-900">{employee.efficiency}%</p>
+                                <p className="text-[16px] font-medium text-gray-900">{employee.efficiency}%</p>
+                                <div className="h-1 rounded-full bg-gray-200 mt-2 overflow-hidden">
+                                    <div className="h-full bg-green-500 rounded-full" style={{ width: `${employee.efficiency}%` }} />
+                                </div>
                             </div>
                         </div>
                     </div>

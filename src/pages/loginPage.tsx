@@ -104,7 +104,7 @@ const LoginPage = () => {
                 placeholder="+998 90 555 20 33"
                 className={`w-full h-13 border rounded px-4 text-sm outline-none transition-colors ${errors.phone
                   ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-400 focus:border-blue-600'
+                  : 'border-gray-400 focus:border-[#64b5f6]'
                   }`}
                 {...register('phone')}
               />
@@ -127,7 +127,7 @@ const LoginPage = () => {
                 placeholder="************"
                 className={`w-full h-13 border rounded px-4 pr-12 text-sm outline-none transition-colors ${errors.password
                   ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-400 focus:border-blue-600'
+                  : 'border-gray-400 focus:border-[#64b5f6]'
                   }`}
                 {...register('password')}
               />
@@ -147,9 +147,9 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded transition-colors"
+              className="w-full h-12 bg-[#64b5f6] hover:bg-[#42a5f5] disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded transition-colors"
             >
-              {isSubmitting ? 'Yuklanmoqda...' : 'Kirish'}
+              {isSubmitting ? 'Kirilmoqda...' : 'Kirish'}
             </button>
 
           </form>

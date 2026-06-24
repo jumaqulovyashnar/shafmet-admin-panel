@@ -122,7 +122,7 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
                 <tr
                   key={emp.id}
                   onClick={() => setSelectedEmployee(emp)}
-                  className="border-b border-gray-50 hover:bg-blue-50 transition-colors cursor-pointer"
+                  className="border-b border-gray-50 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
                 >
                   <td className="py-2.5 px-3 font-medium text-gray-800 text-sm">{emp.name}</td>
                   <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.location}</td>

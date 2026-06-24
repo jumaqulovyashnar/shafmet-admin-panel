@@ -46,7 +46,7 @@ export default function DashboardHeader() {
                         {crumb.href ? (
                             <Link
                                 to={crumb.href}
-                                className="text-gray-400 font-medium hover:text-blue-600 transition-colors text-[13px]"
+                                className="text-gray-400 font-medium hover:text-[#64b5f6] transition-colors text-[13px]"
                             >
                                 {crumb.label}
                             </Link>
@@ -72,7 +72,7 @@ export default function DashboardHeader() {
                     <input
                         type="text"
                         placeholder="Qidirish"
-                        className="h-9 pl-9 pr-4 text-[13px] border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors w-56"
+                        className="h-9 pl-9 pr-4 text-[13px] border border-gray-200 rounded-lg outline-none focus:border-[#64b5f6] transition-colors w-56"
                     />
                 </div>
             </div>

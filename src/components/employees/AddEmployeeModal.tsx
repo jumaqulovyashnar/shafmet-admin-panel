@@ -32,7 +32,7 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
         <DialogHeader>
           <DialogTitle>
             Yangi Hodim{' '}
-            <span className="text-blue-500">Qo'shish</span>
+            <span className="text-[#64b5f6]">Qo'shish</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -64,7 +64,7 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
             <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">Lavozimi</label>
             <div className="relative">
               <select
-                className="w-full h-11 border border-gray-200 rounded-xl px-3 text-[13px] appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                className="w-full h-11 border border-gray-200 rounded-xl px-3 text-[13px] appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#64b5f6] text-gray-700"
                 value={form.location}
                 onChange={(e) => set('location', e.target.value)}
               >
@@ -91,7 +91,7 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
           <div className="flex justify-end pt-1">
             <Button
               onClick={handleCreate}
-              className="bg-blue-600 hover:bg-blue-700 h-10 px-8 rounded-xl text-[13px] font-semibold"
+              className="bg-[#64b5f6] hover:bg-[#42a5f5] h-10 px-8 rounded-xl text-[13px] font-semibold"
             >
               Yaratish
             </Button>

@@ -42,7 +42,7 @@ export default function Pagination({ page, totalPages, onChange, dateLabel }: Pa
                             onClick={() => onChange(p as number)}
                             className={cn(
                                 'w-7 h-7 rounded text-xs font-medium transition-colors',
-                                page === p ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                                page === p ? 'bg-[#64b5f6] text-white' : 'text-gray-600 hover:bg-gray-100'
                             )}
                         >
                             {p}

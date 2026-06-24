@@ -240,18 +240,17 @@ export default function EmployeesPage() {
                 <div className="relative" ref={dropdownRef}>
                     <Button
                         onClick={() => setDropdownOpen((o) => !o)}
-                        className="bg-blue-600 hover:bg-blue-700 h-9 px-4 rounded-xl gap-1.5 text-[13px] font-semibold"
+                        className="bg-[#64b5f6] hover:bg-[#42a5f5] h-9 px-4 rounded-xl gap-1.5 text-[13px] font-semibold"
                     >
                         <Plus size={15} />
                         Yangi Qoshish
-                        <ChevronDown size={13} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                     </Button>
 
                     {dropdownOpen && (
-                        <div className="absolute left-0 top-11 bg-white rounded-xl border border-gray-200 shadow-lg z-20 min-w-44 overflow-hidden">
+                        <div className="absolute left-full top-0 ml-2 bg-white rounded-xl border border-gray-200 shadow-lg z-20 min-w-[200px] overflow-hidden">
                             <button
                                 onClick={() => { setShowAdd(true); setDropdownOpen(false) }}
-                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-[#64b5f6]/10 hover:text-[#64b5f6] transition-colors"
                             >
                                 <UserPlus size={15} />
                                 Yangi Hodim
@@ -259,7 +258,7 @@ export default function EmployeesPage() {
                             <div className="h-px bg-gray-100 mx-2" />
                             <button
                                 onClick={() => { setShowAddRole(true); setDropdownOpen(false) }}
-                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-[#64b5f6]/10 hover:text-[#64b5f6] transition-colors"
                             >
                                 <ShieldPlus size={15} />
                                 Yangi Rol
