@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, SlidersHorizontal, Search, ChevronDown, UserPlus, ShieldPlus, Folder } from 'lucide-react'
+import { Plus, SlidersHorizontal, Search, ChevronDown, UserPlus, ShieldPlus, Folder, Store, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/ui/pagination'
@@ -15,12 +15,36 @@ interface DeptFolder {
     label: string
     count: number
     isCustomRole?: boolean
+    icon?: React.ReactNode
+    bgColor?: string
+    iconColor?: string
 }
 
 const defaultFolders: DeptFolder[] = [
-    { key: 'ichki', label: 'Ichki dokon ishchilari', count: ichkiDokonEmployees.length },
-    { key: 'tashqi', label: 'Tashqi dokon ishchilari', count: tashqiDokonEmployees.length },
-    { key: 'personallar', label: 'Personallar', count: 12 },
+    {
+        key: 'ichki',
+        label: 'Ichki dokon ishchilari',
+        count: ichkiDokonEmployees.length,
+        icon: <Store size={28} />,
+        bgColor: 'bg-green-100',
+        iconColor: 'text-green-500'
+    },
+    {
+        key: 'tashqi',
+        label: 'Tashqi dokon ishchilari',
+        count: tashqiDokonEmployees.length,
+        icon: <Store size={28} />,
+        bgColor: 'bg-blue-100',
+        iconColor: 'text-blue-500'
+    },
+    {
+        key: 'personallar',
+        label: 'Personallar',
+        count: 12,
+        icon: <Users size={28} />,
+        bgColor: 'bg-purple-100',
+        iconColor: 'text-purple-500'
+    },
 ]
 
 // Folder icon color — static va custom rollarga
@@ -28,6 +52,12 @@ const folderColors = [
     'text-amber-400', 'text-teal-400', 'text-blue-400',
     'text-violet-400', 'text-pink-400', 'text-orange-400',
     'text-green-400', 'text-red-400', 'text-cyan-400',
+]
+
+const folderBgColors = [
+    'bg-amber-100', 'bg-teal-100', 'bg-blue-100',
+    'bg-violet-100', 'bg-pink-100', 'bg-orange-100',
+    'bg-green-100', 'bg-red-100', 'bg-cyan-100',
 ]
 
 function getDeptEmployees(key: string): Employee[] {
@@ -61,16 +91,15 @@ function FolderList({
                     onClick={() => onSelect(d.key)}
                     className="bg-white rounded-2xl p-6 text-left hover:shadow-md transition-all group border border-transparent hover:border-blue-100"
                 >
-                    {/* Folder icon from lucide-react */}
+                    {/* Icon from lucide-react */}
                     <div className="mb-4">
                         <div
-                            className={`w-11 h-11 rounded-xl flex items-center justify-center ${folderColors[idx % folderColors.length]} bg-opacity-10`}
-                            style={{ backgroundColor: 'currentColor', opacity: 0.1 }}
+                            className={`w-14 h-14 rounded-xl flex items-center justify-center ${d.bgColor || folderBgColors[idx % folderBgColors.length]
+                                }`}
                         >
-                            <Folder
-                                size={24}
-                                className={folderColors[idx % folderColors.length]}
-                            />
+                            <span className={d.iconColor || folderColors[idx % folderColors.length]}>
+                                {d.icon || <Folder size={28} className={folderColors[idx % folderColors.length]} />}
+                            </span>
                         </div>
                     </div>
                     <h3 className="text-[14px] font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
