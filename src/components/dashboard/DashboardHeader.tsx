@@ -1,45 +1,73 @@
-import { Search, Calendar, ChevronDown, LogOut } from 'lucide-react'
+import { Search, Calendar, ChevronDown } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import useUserStore from '@/stores/userStore'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 
-interface DashboardHeaderProps {
-    userName: string
+interface Crumb { label: string; href?: string }
+
+const deptLabels: Record<string, string> = {
+    ichki: 'Ichki dokon ishchilari',
+    tashqi: 'Tashqi dokon ishchilari',
+    personallar: 'Personallar',
 }
 
-export default function DashboardHeader({ userName }: DashboardHeaderProps) {
-    const clearUserInfoAndToken = useUserStore((s) => s.actions.clearUserInfoAndToken)
-    const navigate = useNavigate()
+function getBreadcrumbs(pathname: string): Crumb[] {
+    if (pathname === '/dashboard') return [{ label: 'Asosiy Sahifa' }]
+    if (pathname === '/tasks') return [{ label: 'Topshiriqlar' }]
+    if (pathname === '/payments') return [{ label: 'Tolovlar' }]
+    if (pathname === '/geo') return [{ label: 'Geolokatsiya' }]
+    if (pathname === '/departments') return [{ label: "Maxsus Bo'lim" }]
 
-    const handleLogout = () => {
-        clearUserInfoAndToken()
-        navigate('/login')
+    if (pathname === '/employees') return [{ label: "Ishchi Qo'shish" }]
+
+    const deptMatch = pathname.match(/^\/employees\/(\w+)$/)
+    if (deptMatch) {
+        const key = deptMatch[1]
+        return [
+            { label: "Ishchi Qo'shish", href: '/employees' },
+            { label: deptLabels[key] ?? key },
+        ]
     }
+
+    return [{ label: 'Admin Panel' }]
+}
+
+export default function DashboardHeader() {
+    const userInfo = useUserStore((s) => s.userInfo)
+    const location = useLocation()
+    const userName = userInfo?.name ?? 'Admin'
+    const crumbs = getBreadcrumbs(location.pathname)
 
     return (
         <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-30">
-            {/* Left — greeting */}
-            <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-gray-800">
-                    Salom {userName} 👋
-                </h2>
-            </div>
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-1.5 text-[14px] font-semibold">
+                {crumbs.map((crumb, i) => (
+                    <span key={i} className="flex items-center gap-1.5">
+                        {i > 0 && (
+                            <span className="text-gray-400 font-normal text-[16px] leading-none">›</span>
+                        )}
+                        {crumb.href ? (
+                            <Link
+                                to={crumb.href}
+                                className="text-gray-400 font-medium hover:text-blue-600 transition-colors text-[13px]"
+                            >
+                                {crumb.label}
+                            </Link>
+                        ) : (
+                            <span className="text-gray-800">{crumb.label}</span>
+                        )}
+                    </span>
+                ))}
+            </nav>
 
-            {/* Right — filter + search + avatar */}
+            {/* Right */}
             <div className="flex items-center gap-3">
-                {/* Filter oylik */}
-                <button className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg px-3 h-8 hover:bg-gray-50 transition-colors">
+                {/* Filtr */}
+                <button className="flex items-center gap-1.5 text-[12px] text-gray-500 border border-gray-200 rounded-lg px-3 h-8 hover:bg-gray-50 transition-colors">
                     <Calendar size={13} className="text-gray-400" />
                     <span>Filtr oylik</span>
-                    <ChevronDown size={12} />
+                    <ChevronDown size={11} />
                 </button>
 
                 {/* Search */}
@@ -48,31 +76,19 @@ export default function DashboardHeader({ userName }: DashboardHeaderProps) {
                     <input
                         type="text"
                         placeholder="Qidirish"
-                        className="h-8 pl-8 pr-3 text-xs border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors w-44"
+                        className="h-8 pl-8 pr-3 text-[12px] border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors w-40"
                     />
                 </div>
 
-                {/* User avatar + dropdown */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-2 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors">
-                            <Avatar className="w-7 h-7">
-                                <AvatarFallback className="text-xs bg-blue-600 text-white">
-                                    {userName.slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
-                            <ChevronDown size={12} className="text-gray-400" />
-                        </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>{userName}</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500">
-                            <LogOut size={13} className="mr-2" />
-                            Chiqish
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Avatar - faqat display */}
+                <div className="flex items-center gap-2 px-1 py-1">
+                    <Avatar className="w-8 h-8">
+                        <AvatarFallback className="text-[11px] font-bold bg-blue-600 text-white">
+                            {userName.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                    <span className="text-[13px] text-gray-700 font-semibold hidden sm:block">{userName}</span>
+                </div>
             </div>
         </header>
     )

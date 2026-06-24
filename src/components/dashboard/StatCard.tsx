@@ -14,7 +14,7 @@ export default function StatCard({ label, count, trend, icon, avatars, onClick }
     return (
         <div
             onClick={onClick}
-            className={`flex items-center gap-4 bg-white rounded-xl px-5 py-4 flex-1 min-w-0 ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''
+            className={`flex items-center gap-4 bg-white rounded-xl px-5 py-4 flex-1 min-w-0 transition-all duration-200 ${onClick ? 'cursor-pointer hover:shadow-lg hover:scale-[1.02]' : ''
                 }`}
         >
             {/* Icon */}

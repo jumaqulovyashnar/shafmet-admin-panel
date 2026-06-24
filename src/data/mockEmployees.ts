@@ -1,35 +1,89 @@
 import type { Employee } from '@/types/dashboard'
 
-export const allEmployees: Employee[] = [
-    { id: 1, name: 'Jane Cooper', location: 'Ichki dokon', phone: '(225) 555-0118', ip: '544.232.021', arrivalTime: '7:30', balance: 32000, efficiency: 80, attempts: 2 },
-    { id: 2, name: 'Floyd Miles', location: 'Ichki dokon', phone: '(205) 555-0100', ip: '256.323.325', arrivalTime: '7:32', balance: 52350, efficiency: 10, attempts: 1 },
-    { id: 3, name: 'Ronald Richards', location: 'Ichki dokon', phone: '(302) 555-0107', ip: '256.326.356', arrivalTime: '7:35', balance: 52145, efficiency: 10, attempts: 1 },
-    { id: 4, name: 'Marvin McKinney', location: 'Ichki dokon', phone: '(252) 555-0126', ip: '235.635.385', arrivalTime: '7:45', balance: 41254, efficiency: 75, attempts: 3 },
-    { id: 5, name: 'Jerome Bell', location: 'Ichki dokon', phone: '(629) 555-0129', ip: '326.365.235', arrivalTime: '7:50', balance: 25320, efficiency: 65, attempts: 10 },
-    { id: 6, name: 'Kathryn Murphy', location: 'Ichki dokon', phone: '(406) 555-0120', ip: '256.365.235', arrivalTime: '7:51', balance: 0, efficiency: 45, attempts: 1 },
-    { id: 7, name: 'Jacob Jones', location: 'Ichki dokon', phone: '(208) 555-0112', ip: '235.236.562', arrivalTime: '7:52', balance: 3000, efficiency: 60, attempts: 2 },
-    { id: 8, name: 'Kristin Watson', location: 'Ichki dokon', phone: '(704) 555-0127', ip: '235.323.325', arrivalTime: '7:53', balance: 21000, efficiency: 25, attempts: 4 },
-    { id: 9, name: 'Albert Flores', location: 'Tashqi dokon', phone: '(316) 555-0116', ip: '112.432.543', arrivalTime: '8:01', balance: 44000, efficiency: 70, attempts: 1 },
-    { id: 10, name: 'Leslie Alexander', location: 'Tashqi dokon', phone: '(907) 555-0101', ip: '198.231.452', arrivalTime: '8:10', balance: 28000, efficiency: 55, attempts: 2 },
+const firstNames = [
+    'Jane', 'Floyd', 'Ronald', 'Marvin', 'Jerome', 'Kathryn', 'Jacob', 'Kristin',
+    'Albert', 'Leslie', 'Devon', 'Esther', 'Robert', 'Maria', 'James', 'Patricia',
+    'John', 'Linda', 'Michael', 'Barbara', 'William', 'Elizabeth', 'David', 'Susan',
+    'Richard', 'Jessica', 'Joseph', 'Sarah', 'Thomas', 'Karen', 'Charles', 'Lisa',
+    'Christopher', 'Nancy', 'Daniel', 'Betty', 'Matthew', 'Margaret', 'Anthony', 'Sandra',
+    'Donald', 'Ashley', 'Mark', 'Emily', 'Paul', 'Dorothy', 'Steven', 'Kimberly',
+    'Andrew', 'Carol', 'Kenneth', 'Michelle', 'Kevin', 'Amanda', 'Brian', 'Melissa',
+    'George', 'Deborah', 'Timothy', 'Stephanie', 'Edward', 'Rebecca', 'Jason', 'Sharon',
+    'Jeffrey', 'Laura', 'Ryan', 'Cynthia', 'Gary', 'Kathleen', 'Nicholas', 'Amy',
+    'Eric', 'Angela', 'Jonathan', 'Shirley', 'Stephen', 'Anna', 'Larry', 'Brenda',
+    'Justin', 'Emma', 'Scott', 'Virginia', 'Brandon', 'Catherine', 'Frank', 'Samantha',
+    'Benjamin', 'Debra', 'Gregory', 'Rachel', 'Raymond', 'Carolyn', 'Samuel', 'Janet',
+    'Patrick', 'Christine', 'Alexander', 'Diana', 'Nathan', 'Helen',
 ]
 
-// Vaqtida kelganlar (7:00 - 8:00 orasida)
+const lastNames = [
+    'Cooper', 'Miles', 'Richards', 'McKinney', 'Bell', 'Murphy', 'Jones', 'Watson',
+    'Flores', 'Alexander', 'Lane', 'Howard', 'Smith', 'Johnson', 'Williams', 'Brown',
+    'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson',
+    'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark',
+    'Rodriguez', 'Lewis', 'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'Hernandez',
+    'King', 'Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez',
+    'Nelson', 'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell',
+    'Parker', 'Evans', 'Edwards', 'Collins', 'Stewart', 'Sanchez', 'Morris', 'Rogers',
+    'Reed', 'Cook', 'Morgan', 'Barnes', 'Ross', 'Henderson', 'Coleman', 'Jenkins',
+    'Perry', 'Powell', 'Long', 'Patterson', 'Hughes', 'Flores', 'Washington', 'Butler',
+    'Simmons', 'Foster', 'Gonzales', 'Bryant', 'Alexander', 'Russell', 'Griffin', 'Diaz',
+    'Hayes', 'Myers', 'Ford', 'Hamilton', 'Graham', 'Sullivan', 'Wallace', 'Woods',
+    'Cole', 'West', 'Jordan', 'Owens', 'Reynolds', 'Fisher', 'Ellis', 'Harrison',
+]
+
+function genPhone(i: number) {
+    const area = 201 + (i % 799)
+    const mid = String(100 + (i * 7) % 900).padStart(3, '0')
+    const end = String((i * 13) % 10000).padStart(4, '0')
+    return `(${area}) 555-${end}`
+}
+
+function genIp(i: number) {
+    return `${100 + (i % 200)}.${(i * 3) % 256}.${(i * 7) % 256}`
+}
+
+const locations: ('Ichki dokon' | 'Tashqi dokon')[] = ['Ichki dokon', 'Tashqi dokon']
+
+export const allEmployees: Employee[] = Array.from({ length: 100 }, (_, i) => {
+    const h = i < 70 ? 7 : i < 88 ? 8 : 9
+    const m = (i * 7) % 60
+    return {
+        id: i + 1,
+        name: `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`,
+        location: locations[i % 2],
+        phone: genPhone(i),
+        ip: genIp(i),
+        arrivalTime: `${h}:${String(m).padStart(2, '0')}`,
+        balance: Math.round((5000 + (i * 1234) % 55000) / 1000) * 1000,
+        efficiency: 10 + (i * 17) % 91,
+        attempts: 1 + (i % 10),
+        tasks: (i * 3) % 9,
+    }
+})
+
 export const onTimeEmployees = allEmployees.filter((e) => {
-    const [h, m] = e.arrivalTime.split(':').map(Number)
-    return h < 8 || (h === 8 && m === 0)
+    const [h] = e.arrivalTime.split(':').map(Number)
+    return h <= 7
 })
 
-// Kechikib kelganlar (8:00 dan keyin)
 export const lateEmployees = allEmployees.filter((e) => {
-    const [h, m] = e.arrivalTime.split(':').map(Number)
-    return h > 8 || (h === 8 && m > 0)
+    const [h] = e.arrivalTime.split(':').map(Number)
+    return h === 8
 })
 
-// Kelmaganlar (mock — ID 11-12)
-export const absentEmployees: Employee[] = [
-    { id: 11, name: 'Devon Lane', location: 'Ichki dokon', phone: '(505) 555-0125', ip: '544.232.021', arrivalTime: '10:05', balance: 0, efficiency: 0, attempts: 2 },
-    { id: 12, name: 'Esther Howard', location: 'Ichki dokon', phone: '(603) 555-0123', ip: '256.365.235', arrivalTime: '9:45', balance: 0, efficiency: 0, attempts: 1 },
-]
+export const absentEmployees: Employee[] = Array.from({ length: 12 }, (_, i) => ({
+    id: 1000 + i,
+    name: `${firstNames[(i + 50) % firstNames.length]} ${lastNames[(i + 40) % lastNames.length]}`,
+    location: locations[i % 2],
+    phone: genPhone(200 + i),
+    ip: genIp(200 + i),
+    arrivalTime: `${10 + (i % 3)}:${String((i * 11) % 60).padStart(2, '0')}`,
+    balance: 0,
+    efficiency: 0,
+    attempts: 1 + (i % 5),
+    tasks: 0,
+}))
 
 export const ichkiDokonEmployees = allEmployees.filter((e) => e.location === 'Ichki dokon')
 export const tashqiDokonEmployees = allEmployees.filter((e) => e.location === 'Tashqi dokon')

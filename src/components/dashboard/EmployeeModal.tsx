@@ -1,14 +1,10 @@
 import { useState } from 'react'
 import { Search, Download } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import Pagination from '@/components/ui/pagination'
+import EmployeeProfileModal from './EmployeeProfileModal'
 import type { Employee, ModalType } from '@/types/dashboard'
 
 interface EmployeeModalProps {
@@ -18,31 +14,35 @@ interface EmployeeModalProps {
   employees: Employee[]
 }
 
-const ITEMS_PER_PAGE = 8
+const ITEMS_PER_PAGE = 10
 
 const modalConfig: Record<
   NonNullable<ModalType>,
-  { title: string; subLabel: (count: number) => string; timeColor: string }
+  { title: string; subLabel: (count: number) => string; timeColor: string; subColor: string }
 > = {
   'ichki-dokon': {
     title: 'Ichki dokon Xodimlari',
-    subLabel: (n) => `umumiy faolligar`,
+    subLabel: () => 'umumiy faolligar',
     timeColor: 'bg-blue-600 text-white',
+    subColor: 'text-blue-600',
   },
   kelganlar: {
     title: 'Ishga Kelganlar',
     subLabel: (n) => `Vaqtida Kelganlar ${n}`,
     timeColor: 'bg-blue-600 text-white',
+    subColor: 'text-blue-600',
   },
   kechikkanlar: {
     title: 'Ishga Kechikib Kelganlar',
     subLabel: (n) => `Kechikib Kelganlar ${n}`,
     timeColor: 'bg-amber-400 text-white',
+    subColor: 'text-amber-500',
   },
   kelmaganlar: {
     title: 'Ishga Kelmaganlar',
     subLabel: (n) => `Ishga Kelmagan ${n}`,
     timeColor: 'bg-red-500 text-white',
+    subColor: 'text-red-500',
   },
 }
 
@@ -55,6 +55,7 @@ function efficiencyColor(val: number) {
 export default function EmployeeModal({ open, onClose, type, employees }: EmployeeModalProps) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
 
   if (!type) return null
   const cfg = modalConfig[type]
@@ -68,34 +69,30 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
   const showBalance = type === 'ichki-dokon'
   const showIp = type !== 'ichki-dokon'
 
-  const subColor =
-    type === 'kelganlar'
-      ? 'text-blue-600'
-      : type === 'kechikkanlar'
-      ? 'text-amber-500'
-      : type === 'kelmaganlar'
-      ? 'text-red-500'
-      : 'text-blue-600'
+  const handleSearch = (val: string) => {
+    setSearch(val)
+    setPage(1)
+  }
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-6">
         <DialogHeader>
           <DialogTitle>{cfg.title}</DialogTitle>
-          <DialogDescription className={`font-semibold text-sm ${subColor}`}>
+          <DialogDescription className={`font-semibold text-sm ${cfg.subColor}`}>
             {cfg.subLabel(filtered.length)}
           </DialogDescription>
         </DialogHeader>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-3">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
             <Input
               placeholder="Qidirish"
               className="pl-8 h-8 text-xs"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
           <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8">
@@ -105,33 +102,33 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
         </div>
 
         {/* Table */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 min-h-0">
           <table className="w-full text-sm">
-            <thead>
+            <thead className="sticky top-0 bg-white">
               <tr className="border-b border-gray-100">
                 <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ism Familiyasi</th>
                 <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ish Joyi</th>
                 <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Telefon Raqami</th>
                 {showIp && <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ip Manzil</th>}
-                {showIp && <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">urunishlar</th>}
+                {showIp && <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Urunishlar</th>}
                 {showBalance && <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Balansi</th>}
                 <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">
-                  {showBalance ? "Faolligi" : "Kelgan Vaqti"}
+                  {showBalance ? 'Faolligi' : 'Kelgan Vaqti'}
                 </th>
               </tr>
             </thead>
             <tbody>
               {paginated.map((emp) => (
-                <tr key={emp.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="py-2.5 px-3 font-medium text-gray-800">{emp.name}</td>
+                <tr
+                  key={emp.id}
+                  onClick={() => setSelectedEmployee(emp)}
+                  className="border-b border-gray-50 hover:bg-blue-50 transition-colors cursor-pointer"
+                >
+                  <td className="py-2.5 px-3 font-medium text-gray-800 text-sm">{emp.name}</td>
                   <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.location}</td>
                   <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.phone}</td>
                   {showIp && <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.ip}</td>}
-                  {showIp && (
-                    <td className="py-2.5 px-3 text-gray-500 text-xs">
-                      {emp.attempts} ta
-                    </td>
-                  )}
+                  {showIp && <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.attempts} ta</td>}
                   {showBalance && (
                     <td className="py-2.5 px-3 text-gray-700 text-xs">
                       {emp.balance.toLocaleString()} so'm
@@ -154,52 +151,14 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
           </table>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-2">
-          <span className="text-xs text-gray-400">
-            Ushbu ma'lumotlar 2026-25-02 niki
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="w-7 h-7 rounded flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:opacity-40 text-sm"
-            >
-              ‹
-            </button>
-            {Array.from({ length: Math.min(4, totalPages) }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`w-7 h-7 rounded text-xs font-medium transition-colors ${
-                  page === p
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-            {totalPages > 4 && (
-              <>
-                <span className="text-gray-400 text-xs px-1">...</span>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  className={`w-7 h-7 rounded text-xs font-medium ${page === totalPages ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                >
-                  {totalPages}
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="w-7 h-7 rounded flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:opacity-40 text-sm"
-            >
-              ›
-            </button>
-          </div>
-        </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+
+        {/* Employee Profile Modal */}
+        <EmployeeProfileModal
+          open={selectedEmployee !== null}
+          onClose={() => setSelectedEmployee(null)}
+          employee={selectedEmployee}
+        />
       </DialogContent>
     </Dialog>
   )

@@ -17,8 +17,13 @@ export default function DonutChart({
     const center = size / 2
 
     return (
-        <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-            <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <div className="relative flex items-center justify-center group" style={{ width: size, height: size }}>
+            <svg
+                width={size}
+                height={size}
+                className="transition-transform duration-500 group-hover:rotate-180"
+                style={{ transform: 'rotate(-90deg)' }}
+            >
                 {/* Background track */}
                 <circle
                     cx={center}
@@ -39,13 +44,13 @@ export default function DonutChart({
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     strokeLinecap="round"
-                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                    className="transition-all duration-500"
                 />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-xl font-bold text-gray-800">{percentage}%</span>
-                <span className="text-[9px] text-gray-500 text-center leading-tight mt-0.5 px-2">
-                    Vazifa fazoda olinganda
+                <span className="text-[10px] text-gray-500 text-center leading-tight mt-0.5 px-3 max-w-[85px]">
+                    Bajarilgan
                 </span>
             </div>
         </div>

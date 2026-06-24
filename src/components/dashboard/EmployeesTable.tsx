@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Search, ChevronDown } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import EmployeeProfileModal from './EmployeeProfileModal'
 import type { Employee } from '@/types/dashboard'
 
 interface EmployeesTableProps {
@@ -20,6 +21,7 @@ function efficiencyStyle(val: number) {
 export default function EmployeesTable({ employees, loading }: EmployeesTableProps) {
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('Barchasi')
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
 
     const filtered = employees.filter((e) => {
         const matchSearch = e.name.toLowerCase().includes(search.toLowerCase())
@@ -96,7 +98,11 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
                                 </tr>
                             ))
                             : filtered.map((emp) => (
-                                <tr key={emp.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                <tr
+                                    key={emp.id}
+                                    onClick={() => setSelectedEmployee(emp)}
+                                    className="border-b border-gray-50 hover:bg-blue-50 transition-colors cursor-pointer"
+                                >
                                     <td className="py-3 px-3 font-medium text-gray-800 text-sm">{emp.name}</td>
                                     <td className="py-3 px-3 text-gray-500 text-xs">{emp.location}</td>
                                     <td className="py-3 px-3 text-gray-500 text-xs">{emp.phone}</td>
@@ -114,6 +120,13 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
                     </tbody>
                 </table>
             </div>
+
+            {/* Employee Profile Modal */}
+            <EmployeeProfileModal
+                open={selectedEmployee !== null}
+                onClose={() => setSelectedEmployee(null)}
+                employee={selectedEmployee}
+            />
         </div>
     )
 }
