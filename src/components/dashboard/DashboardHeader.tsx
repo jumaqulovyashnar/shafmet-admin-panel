@@ -1,6 +1,4 @@
 import { Search, Calendar, ChevronDown } from 'lucide-react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import useUserStore from '@/stores/userStore'
 import { useLocation, Link } from 'react-router-dom'
 
 interface Crumb { label: string; href?: string }
@@ -33,9 +31,7 @@ function getBreadcrumbs(pathname: string): Crumb[] {
 }
 
 export default function DashboardHeader() {
-    const userInfo = useUserStore((s) => s.userInfo)
     const location = useLocation()
-    const userName = userInfo?.name ?? 'Admin'
     const crumbs = getBreadcrumbs(location.pathname)
 
     return (
@@ -62,32 +58,22 @@ export default function DashboardHeader() {
             </nav>
 
             {/* Right */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mr-12">
                 {/* Filtr */}
-                <button className="flex items-center gap-1.5 text-[12px] text-gray-500 border border-gray-200 rounded-lg px-3 h-8 hover:bg-gray-50 transition-colors">
-                    <Calendar size={13} className="text-gray-400" />
-                    <span>Filtr oylik</span>
-                    <ChevronDown size={11} />
+                <button className="flex items-center gap-2 text-[13px] text-gray-500 border border-gray-200 rounded-lg px-5 h-9 hover:bg-gray-50 transition-colors min-w-[160px]">
+                    <Calendar size={14} className="text-gray-400" />
+                    <span>Filtrlar oylik</span>
+                    <ChevronDown size={12} />
                 </button>
 
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                     <input
                         type="text"
                         placeholder="Qidirish"
-                        className="h-8 pl-8 pr-3 text-[12px] border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors w-40"
+                        className="h-9 pl-9 pr-4 text-[13px] border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors w-56"
                     />
-                </div>
-
-                {/* Avatar - faqat display */}
-                <div className="flex items-center gap-2 px-1 py-1">
-                    <Avatar className="w-8 h-8">
-                        <AvatarFallback className="text-[11px] font-bold bg-blue-600 text-white">
-                            {userName.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
-                    <span className="text-[13px] text-gray-700 font-semibold hidden sm:block">{userName}</span>
                 </div>
             </div>
         </header>

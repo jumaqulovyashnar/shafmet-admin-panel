@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart, User } from 'lucide-react'
 import TasksEmployeeModal from '@/components/tasks/TasksEmployeeModal'
 import { ichkiDokonEmployees, tashqiDokonEmployees, allEmployees } from '@/data/mockEmployees'
 
@@ -9,13 +9,14 @@ interface DepartmentCard {
     subtitle: string
     iconBg: string
     iconColor: string
+    icon: React.ReactNode
 }
 
 const departments: DepartmentCard[] = [
-    { key: 'ichki', title: "Ichki Do'kon", subtitle: "Ichki do'kon statistikasi umumiy", iconBg: 'bg-green-100', iconColor: 'text-green-500' },
-    { key: 'tashqi', title: "Tashqi Do'kon", subtitle: "Tashqi do'kon statistikasi umumiy", iconBg: 'bg-red-100', iconColor: 'text-red-400' },
-    { key: 'personallar', title: 'Personallar', subtitle: 'Personallar statistikasi umumiy', iconBg: 'bg-pink-100', iconColor: 'text-pink-400' },
-    { key: 'buxgalter', title: 'Buxgalter', subtitle: 'Buxgalterlar statistikasi umumiy', iconBg: 'bg-green-100', iconColor: 'text-green-500' },
+    { key: 'ichki', title: "Ichki Do'kon", subtitle: "Ichki do'kon statistikasi umumiy", iconBg: 'bg-green-100', iconColor: 'text-green-500', icon: <ShoppingCart size={24} /> },
+    { key: 'tashqi', title: "Tashqi Do'kon", subtitle: "Tashqi do'kon statistikasi umumiy", iconBg: 'bg-red-100', iconColor: 'text-red-400', icon: <ShoppingCart size={24} /> },
+    { key: 'personallar', title: 'Personallar', subtitle: 'Personallar statistikasi umumiy', iconBg: 'bg-pink-100', iconColor: 'text-pink-400', icon: <ShoppingCart size={24} /> },
+    { key: 'buxgalter', title: 'Buxgalter', subtitle: 'Buxgalterlar statistikasi umumiy', iconBg: 'bg-blue-100', iconColor: 'text-blue-500', icon: <User size={24} /> },
 ]
 
 export default function TasksPage() {
@@ -43,8 +44,8 @@ export default function TasksPage() {
                         onClick={() => setOpenDept(dept.key)}
                         className="bg-white rounded-xl p-6 flex items-center gap-5 hover:shadow-md transition-shadow text-left group"
                     >
-                        <div className={`w-14 h-14 rounded-full ${dept.iconBg} flex items-center justify-center shrink-0`}>
-                            <ShoppingCart size={24} className={dept.iconColor} />
+                        <div className={`w-14 h-14 rounded-full ${dept.iconBg} flex items-center justify-center shrink-0 ${dept.iconColor}`}>
+                            {dept.icon}
                         </div>
                         <div>
                             <h3 className="font-semibold text-gray-900 text-base group-hover:text-blue-600 transition-colors">

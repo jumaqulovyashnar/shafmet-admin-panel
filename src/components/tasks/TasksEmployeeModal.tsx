@@ -86,7 +86,7 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
                                         <td className="py-2.5 px-3">
                                             <button
                                                 onClick={() => setAssignTarget(emp)}
-                                                className="w-8 h-7 rounded-md bg-blue-400 hover:bg-blue-500 text-white font-bold text-lg flex items-center justify-center transition-colors"
+                                                className="w-8 h-8 rounded-md bg-blue-400 hover:bg-blue-500 text-white font-bold text-lg flex items-center justify-center transition-colors"
                                             >
                                                 +
                                             </button>
@@ -94,7 +94,7 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
                                         <td className="py-2.5 px-3">
                                             <button
                                                 onClick={() => setRemoveTarget(emp)}
-                                                className="w-8 h-7 rounded-md bg-red-400 hover:bg-red-500 text-white font-bold text-lg flex items-center justify-center transition-colors"
+                                                className="w-8 h-8 rounded-md bg-red-400 hover:bg-red-500 text-white font-bold text-lg flex items-center justify-center transition-colors"
                                             >
                                                 −
                                             </button>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, SlidersHorizontal, Search, ChevronDown, UserPlus, ShieldPlus } from 'lucide-react'
+import { Plus, SlidersHorizontal, Search, ChevronDown, UserPlus, ShieldPlus, Folder } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/ui/pagination'
@@ -61,20 +61,17 @@ function FolderList({
                     onClick={() => onSelect(d.key)}
                     className="bg-white rounded-2xl p-6 text-left hover:shadow-md transition-all group border border-transparent hover:border-blue-100"
                 >
-                    {/* Folder SVG icon */}
+                    {/* Folder icon from lucide-react */}
                     <div className="mb-4">
-                        <svg
-                            width="44" height="44" viewBox="0 0 44 44" fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+                        <div
+                            className={`w-11 h-11 rounded-xl flex items-center justify-center ${folderColors[idx % folderColors.length]} bg-opacity-10`}
+                            style={{ backgroundColor: 'currentColor', opacity: 0.1 }}
                         >
-                            <rect width="44" height="44" rx="10" fill="currentColor" fillOpacity="0.1"
-                                className={folderColors[idx % folderColors.length]} />
-                            <path
-                                d="M10 16C10 14.9 10.9 14 12 14H19L21 16H32C33.1 16 34 16.9 34 18V30C34 31.1 33.1 32 32 32H12C10.9 32 10 31.1 10 30V16Z"
-                                fill="currentColor"
+                            <Folder
+                                size={24}
                                 className={folderColors[idx % folderColors.length]}
                             />
-                        </svg>
+                        </div>
                     </div>
                     <h3 className="text-[14px] font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
                         {d.label}

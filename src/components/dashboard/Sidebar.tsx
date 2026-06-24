@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, ClipboardList, UserPlus,
-  ShoppingCart, MapPin, Building2, Menu, ChevronRight, LogOut,
+  ShoppingCart, MapPin, Building2, Menu, ChevronRight, LogOut, Phone,
 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import useUserStore from '@/stores/userStore'
@@ -76,8 +76,8 @@ export default function Sidebar() {
                 'flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl text-[13px] font-medium transition-all',
                 collapsed && 'justify-center px-0',
                 isActive
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                  ? 'bg-[#1976d2] text-white shadow-sm'
+                  : 'text-gray-500 hover:bg-[#1976d2]/10 hover:text-gray-800'
               )}
             >
               <span className="shrink-0">{item.icon}</span>
@@ -89,18 +89,19 @@ export default function Sidebar() {
 
       {/* Promo banner */}
       {!collapsed && (
-        <div className="mx-3 mb-3 rounded-xl bg-linear-to-br from-blue-600 to-violet-600 p-3 text-white">
+        <div className="mx-3 mb-3 rounded-xl bg-linear-to-br from-[#1976d2] to-violet-600 p-3 text-white">
           <p className="text-[11px] font-medium leading-tight mb-2">
             yangi funksiyalar tez orada ochiladi !
           </p>
-          <button className="w-full h-7 bg-white text-blue-600 text-[11px] font-semibold rounded-lg hover:bg-blue-50 transition-colors">
+          <button className="w-full h-7 bg-white text-[#1976d2] text-[11px] font-semibold rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5">
+            <Phone size={13} />
             Bog'lanish
           </button>
         </div>
       )}
 
       {/* User info with logout */}
-      <div className="border-t border-gray-100 px-2 py-3">
+      <div className="border-t border-gray-100 px-2 py-3 relative">
         {/* User button */}
         <button
           onClick={() => setShowLogout(!showLogout)}
@@ -110,7 +111,7 @@ export default function Sidebar() {
           )}
         >
           <Avatar className="w-9 h-9 shrink-0">
-            <AvatarFallback className="bg-blue-600 text-white text-xs font-semibold">
+            <AvatarFallback className="bg-[#1976d2] text-white text-xs font-semibold">
               {(userInfo?.name ?? 'Ad').slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -132,15 +133,17 @@ export default function Sidebar() {
           )}
         </button>
 
-        {/* Logout button - shown when expanded */}
+        {/* Logout modal - opens from right */}
         {showLogout && !collapsed && (
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors"
-          >
-            <LogOut size={17} className="shrink-0" />
-            <span>Chiqish</span>
-          </button>
+          <div className="absolute right-full bottom-0 mb-0 mr-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2 min-w-[160px]">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <LogOut size={17} className="shrink-0" />
+              <span>Chiqish</span>
+            </button>
+          </div>
         )}
       </div>
     </aside>

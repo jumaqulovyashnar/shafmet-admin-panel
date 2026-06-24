@@ -65,14 +65,14 @@ export const allEmployees: Employee[] = Array.from({ length: 100 }, (_, i) => {
 export const onTimeEmployees = allEmployees.filter((e) => {
     const [h] = e.arrivalTime.split(':').map(Number)
     return h <= 7
-})
+}).slice(0, 50)
 
 export const lateEmployees = allEmployees.filter((e) => {
     const [h] = e.arrivalTime.split(':').map(Number)
     return h === 8
-})
+}).slice(0, 50)
 
-export const absentEmployees: Employee[] = Array.from({ length: 12 }, (_, i) => ({
+export const absentEmployees: Employee[] = Array.from({ length: 50 }, (_, i) => ({
     id: 1000 + i,
     name: `${firstNames[(i + 50) % firstNames.length]} ${lastNames[(i + 40) % lastNames.length]}`,
     location: locations[i % 2],
@@ -85,5 +85,5 @@ export const absentEmployees: Employee[] = Array.from({ length: 12 }, (_, i) => 
     tasks: 0,
 }))
 
-export const ichkiDokonEmployees = allEmployees.filter((e) => e.location === 'Ichki dokon')
-export const tashqiDokonEmployees = allEmployees.filter((e) => e.location === 'Tashqi dokon')
+export const ichkiDokonEmployees = allEmployees.filter((e) => e.location === 'Ichki dokon').slice(0, 50)
+export const tashqiDokonEmployees = allEmployees.filter((e) => e.location === 'Tashqi dokon').slice(0, 50)
