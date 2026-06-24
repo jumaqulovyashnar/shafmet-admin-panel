@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, ClipboardList, UserPlus,
-  ShoppingCart, MapPin, Building2, Menu, ChevronRight, LogOut, Phone,
+  ShoppingCart, MapPin, Building2, Menu, LogOut,
 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import useUserStore from '@/stores/userStore'
@@ -27,7 +27,6 @@ export default function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
-  const [showLogout, setShowLogout] = useState(false)
   const userInfo = useUserStore((s) => s.userInfo)
   const clearUserInfoAndToken = useUserStore((s) => s.actions.clearUserInfoAndToken)
 
@@ -85,28 +84,29 @@ export default function Sidebar() {
             </Link>
           )
         })}
+
+        {/* Spacer */}
+        <div className="h-[270px]"></div>
+
+        {/* Logout button */}
+        <button
+          onClick={handleLogout}
+          title={collapsed ? 'Chiqish' : undefined}
+          className={cn(
+            'w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl text-[13px] font-medium transition-all text-red-600 bg-red-50 hover:bg-red-100',
+            collapsed && 'justify-center px-0'
+          )}
+        >
+          <span className="shrink-0"><LogOut size={18} /></span>
+          {!collapsed && <span className="truncate">Chiqish</span>}
+        </button>
       </nav>
 
-      {/* Promo banner */}
-      {!collapsed && (
-        <div className="mx-3 mb-3 rounded-xl bg-linear-to-br from-[#1976d2] to-violet-600 p-3 text-white">
-          <p className="text-[11px] font-medium leading-tight mb-2">
-            yangi funksiyalar tez orada ochiladi !
-          </p>
-          <button className="w-full h-7 bg-white text-[#1976d2] text-[11px] font-semibold rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5">
-            <Phone size={13} />
-            Bog'lanish
-          </button>
-        </div>
-      )}
-
-      {/* User info with logout */}
-      <div className="border-t border-gray-100 px-2 py-3 relative">
-        {/* User button */}
-        <button
-          onClick={() => setShowLogout(!showLogout)}
+      {/* User info */}
+      <div className="border-t border-gray-100 px-2 py-3">
+        <div
           className={cn(
-            'w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors',
+            'w-full flex items-center gap-2 px-2 py-1.5 rounded-lg',
             collapsed && 'justify-center'
           )}
         >
@@ -116,47 +116,13 @@ export default function Sidebar() {
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
-            <>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold text-gray-800 truncate">
-                  {userInfo?.name ?? 'Admin'}
-                </p>
-              </div>
-              <ChevronRight
-                size={14}
-                className={cn(
-                  'text-gray-400 transition-transform shrink-0',
-                  showLogout && 'rotate-90'
-                )}
-              />
-            </>
-          )}
-        </button>
-
-        {/* Logout modal - opens from right with shadcn style */}
-        {showLogout && !collapsed && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/20 z-50"
-              onClick={() => setShowLogout(false)}
-            />
-
-            {/* Modal */}
-            <div className="fixed left-56 bottom-8 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in slide-in-from-left-2 duration-200 w-64">
-              {/* Logout Button */}
-              <div className="p-2">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[14px] font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors group"
-                >
-                  <LogOut size={18} className="shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                  <span>Chiqish</span>
-                </button>
-              </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-[13px] font-semibold text-gray-800 truncate">
+                {userInfo?.name ?? 'Admin'}
+              </p>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </aside>
   )
