@@ -5,22 +5,29 @@ interface StatCardProps {
     label: string
     count: number
     trend?: { value: string; direction: 'up' | 'down' }
-    icon: ReactNode
+    icon?: ReactNode
+    profileImage?: string
     avatars?: string[]
     onClick?: () => void
 }
 
-export default function StatCard({ label, count, trend, icon, avatars, onClick }: StatCardProps) {
+export default function StatCard({ label, count, trend, icon, profileImage, avatars, onClick }: StatCardProps) {
     return (
         <div
             onClick={onClick}
             className={`flex items-center gap-4 bg-white rounded-xl px-5 py-4 flex-1 min-w-0 transition-all duration-200 ${onClick ? 'cursor-pointer hover:shadow-lg hover:scale-[1.02]' : ''
                 }`}
         >
-            {/* Icon */}
-            <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                {icon}
-            </div>
+            {/* Icon or Profile Image */}
+            {profileImage ? (
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <img src={profileImage} alt="" className="w-8 h-8" />
+                </div>
+            ) : (
+                <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    {icon}
+                </div>
+            )}
 
             {/* Content */}
             <div className="flex-1 min-w-0">

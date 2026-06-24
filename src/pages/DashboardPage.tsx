@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Users, UserCheck, UserX } from 'lucide-react'
-import StatCard from '@/components/dashboard/StatCard'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 import StoreCard from '@/components/dashboard/StoreCard'
 import EmployeesTable from '@/components/dashboard/EmployeesTable'
 import EmployeeModal from '@/components/dashboard/EmployeeModal'
+import { images } from '@/api/constant/images'
 import type { ModalType } from '@/types/dashboard'
 import {
     allEmployees,
@@ -28,28 +28,61 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-5">
-            {/* Stat cards row */}
-            <div className="flex gap-4">
-                <StatCard
-                    label="Ishga Kelganlar"
-                    count={onTimeEmployees.length}
-                    trend={{ value: '18%', direction: 'up' }}
-                    icon={<UserCheck size={20} className="text-emerald-600" />}
+            {/* Stat cards row - combined into single card with dividers */}
+            <div className="bg-white rounded-xl px-5 py-4 flex items-center divide-x divide-gray-200">
+                {/* Card 1 */}
+                <div
                     onClick={() => setModal('kelganlar')}
-                />
-                <StatCard
-                    label="Ishga kechikganlar"
-                    count={lateEmployees.length}
-                    trend={{ value: '1%', direction: 'down' }}
-                    icon={<Users size={20} className="text-amber-500" />}
+                    className="flex items-center gap-4 flex-1 pr-5 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <img src={images.profile1} alt="" className="w-8 h-8" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 mb-0.5">Ishga Kelganlar</p>
+                        <p className="text-2xl font-bold text-gray-900">{onTimeEmployees.length}</p>
+                        <div className="flex items-center gap-1 text-xs mt-0.5 text-emerald-600">
+                            <TrendingUp size={11} />
+                            <span>18% o'tgan oyga nbt</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 2 */}
+                <div
                     onClick={() => setModal('kechikkanlar')}
-                />
-                <StatCard
-                    label="Kelmaganlar"
-                    count={absentEmployees.length}
-                    icon={<UserX size={20} className="text-red-500" />}
+                    className="flex items-center gap-4 flex-1 px-5 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <img src={images.profile2} alt="" className="w-8 h-8" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 mb-0.5">Ishga kechikganlar</p>
+                        <p className="text-2xl font-bold text-gray-900">{lateEmployees.length}</p>
+                        <div className="flex items-center gap-1 text-xs mt-0.5 text-red-500">
+                            <TrendingDown size={11} />
+                            <span>1% o'tgan oyga nbt</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 3 */}
+                <div
                     onClick={() => setModal('kelmaganlar')}
-                />
+                    className="flex items-center gap-4 flex-1 pl-5 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <img src={images.profile3} alt="" className="w-8 h-8" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 mb-0.5">Kelmaganlar</p>
+                        <p className="text-2xl font-bold text-gray-900">{absentEmployees.length}</p>
+                        <div className="flex -space-x-1.5 mt-1">
+                            <img src={images.profile1} alt="" className="w-5 h-5 rounded-full border border-white object-cover" />
+                            <img src={images.profile2} alt="" className="w-5 h-5 rounded-full border border-white object-cover" />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Store cards row */}
