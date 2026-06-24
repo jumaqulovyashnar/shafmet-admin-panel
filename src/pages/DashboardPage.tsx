@@ -29,7 +29,7 @@ export default function DashboardPage() {
     return (
         <div className="space-y-5">
             {/* Stat cards row - combined into single card with dividers */}
-            <div className="bg-white rounded-xl px-5 py-4 flex items-center divide-x divide-gray-200">
+            <div className="bg-white rounded-xl px-5 py-4 flex items-center divide-x divide-gray-200" style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
                 {/* Card 1 */}
                 <div
                     onClick={() => setModal('kelganlar')}
@@ -77,10 +77,6 @@ export default function DashboardPage() {
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Kelmaganlar</p>
                         <p className="text-2xl font-bold text-gray-900">{absentEmployees.length}</p>
-                        <div className="flex -space-x-1.5 mt-1">
-                            <img src={images.profile1} alt="" className="w-5 h-5 rounded-full border border-white object-cover" />
-                            <img src={images.profile2} alt="" className="w-5 h-5 rounded-full border border-white object-cover" />
-                        </div>
                     </div>
                 </div>
             </div>
