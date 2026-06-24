@@ -24,24 +24,23 @@ export default function Pagination({ page, totalPages, onChange, dateLabel }: Pa
     }
 
     return (
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-2 shrink-0">
-            <span className="text-xs text-gray-400">{dateLabel ?? "Ushbu ma'lumotlar 2026-25-02 niki"}</span>
-            <div className="flex items-center gap-1">
+        <div className="flex items-center justify-end pt-3 border-t border-gray-100 mt-2 shrink-0">
+            <div className="flex items-center gap-2">
                 <button
                     onClick={() => onChange(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="w-7 h-7 rounded flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:opacity-40"
+                    className="w-8 h-8 rounded flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:opacity-40 font-bold text-lg"
                 >‹</button>
 
                 {getPages().map((p, idx) =>
                     p === '...' ? (
-                        <span key={`dot-${idx}`} className="w-7 text-center text-gray-400 text-xs">...</span>
+                        <span key={`dot-${idx}`} className="w-8 text-center text-gray-400 text-sm font-semibold">...</span>
                     ) : (
                         <button
                             key={p}
                             onClick={() => onChange(p as number)}
                             className={cn(
-                                'w-7 h-7 rounded text-xs font-medium transition-colors',
+                                'w-8 h-8 rounded text-sm font-semibold transition-colors',
                                 page === p ? 'bg-[#64b5f6] text-white' : 'text-gray-600 hover:bg-gray-100'
                             )}
                         >
@@ -53,7 +52,7 @@ export default function Pagination({ page, totalPages, onChange, dateLabel }: Pa
                 <button
                     onClick={() => onChange(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="w-7 h-7 rounded flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:opacity-40"
+                    className="w-8 h-8 rounded flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:opacity-40 font-bold text-lg"
                 >›</button>
             </div>
         </div>

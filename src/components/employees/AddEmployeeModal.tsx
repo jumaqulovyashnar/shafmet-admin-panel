@@ -47,8 +47,6 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
               onChange={(e) => set('name', e.target.value)}
             />
           </div>
-
-          {/* Telefon */}
           <div>
             <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">Telefon Raqami</label>
             <Input
@@ -58,8 +56,6 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
               onChange={(e) => set('phone', e.target.value)}
             />
           </div>
-
-          {/* Lavozim */}
           <div>
             <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">Lavozimi</label>
             <div className="relative">
