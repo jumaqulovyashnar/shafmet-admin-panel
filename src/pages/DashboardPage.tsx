@@ -82,7 +82,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Store cards row */}
-            <div className="flex gap-4">
+            <div className="flex gap-[10px]">
                 <StoreCard
                     title="Ichki Do'kon"
                     subtitle="Ichki do'kon statistikasi umumiy"

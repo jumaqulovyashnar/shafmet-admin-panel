@@ -83,7 +83,7 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-2 right-1 z-[60] w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                    className="absolute top-0 right-1 z-60 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
                 >
                     <X size={16} />
                 </button>
@@ -112,7 +112,7 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
                         <p className="text-xs text-gray-500 mb-6">{formData.position}</p>
 
                         {/* Contact Info */}
-                        <div className="w-full space-y-3">
+                        <div className="w-full space-y-3 flex flex-col items-center">
                             <div className="flex items-center gap-2 text-xs text-gray-600">
                                 <Phone size={13} className="text-gray-400 shrink-0" />
                                 <span>{formData.phone || '(225) 555-0118'}</span>
@@ -132,7 +132,7 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
                         </div>
 
                         {/* Balance */}
-                        <div className="mt-6 w-full bg-gray-50 rounded-xl p-3">
+                        <div className="mt-6 w-full bg-gray-50 rounded-xl p-3 text-center">
                             <p className="text-xs text-gray-500 mb-1">Joriy balans</p>
                             <p className="text-xl font-bold text-gray-900">{formData.balance.toLocaleString()} so'm</p>
                         </div>
@@ -303,7 +303,6 @@ function InfoTab({
                     <InfoRow label="Ishga kirgan sana" value={formData.startDate} isEditing={false} />
                     <InfoRow label="Xodim ID" value={formData.xodimId} isEditing={false} />
                 </div>
-
                 {/* Quick Actions */}
                 <div className="bg-white rounded-xl border border-gray-100">
                     <p className="text-xs font-semibold text-gray-500 px-4 pt-3 pb-2 uppercase tracking-wide">Tezkor amallar</p>
@@ -333,21 +332,18 @@ function InfoTab({
                         <button className="text-xs text-blue-600 font-medium hover:underline">Barchasini ko'rish</button>
                     </div>
                     <div className="space-y-2">
-                        {activities.map((a, i) => {
-                            const Icon = a.icon
-                            return (
-                                <div key={i} className={`${a.bg} rounded-xl p-3 flex items-start gap-3`}>
-                                    <div className={`w-8 h-8 rounded-full ${a.iconBg} flex items-center justify-center shrink-0`}>
-                                        <Icon size={15} className={a.iconColor} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-gray-900">{a.title}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">{a.desc}</p>
-                                    </div>
-                                    <span className="text-xs text-gray-400 whitespace-nowrap">{a.time}</span>
+                        {activities.map((a, i) => (
+                            <div key={i} className={`${a.bg} rounded-xl p-3 flex items-start gap-3`}>
+                                <div className={`w-8 h-8 rounded-full ${a.iconBg} flex items-center justify-center shrink-0`}>
+                                    <a.icon size={15} className={a.iconColor} />
                                 </div>
-                            )
-                        })}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900">{a.title}</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">{a.desc}</p>
+                                </div>
+                                <span className="text-xs text-gray-400 whitespace-nowrap">{a.time}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
 

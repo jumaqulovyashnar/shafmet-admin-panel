@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, SlidersHorizontal, Search, ChevronDown, UserPlus, ShieldPlus, Folder, Store, Users } from 'lucide-react'
+import { Plus, SlidersHorizontal, Search, ChevronDown, UserPlus, ShieldPlus, Folder, Store, Users, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/ui/pagination'
 import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import AddRoleModal from '@/components/employees/AddRoleModal'
+import EditDepartmentModal from '@/components/employees/EditDepartmentModal'
+import DeleteDepartmentModal from '@/components/employees/DeleteDepartmentModal'
 import { ichkiDokonEmployees, tashqiDokonEmployees, allEmployees } from '@/data/mockEmployees'
 import type { Employee } from '@/types/dashboard'
 
@@ -79,34 +81,60 @@ const ITEMS_PER_PAGE = 10
 function FolderList({
     folders,
     onSelect,
+    onEdit,
+    onDelete,
 }: {
     folders: DeptFolder[]
     onSelect: (key: string) => void
+    onEdit?: (key: string) => void
+    onDelete?: (key: string) => void
 }) {
     return (
         <div className="grid grid-cols-3 gap-4">
             {folders.map((d, idx) => (
-                <button
+                <div
                     key={d.key}
-                    onClick={() => onSelect(d.key)}
-                    className="bg-white rounded-2xl p-6 text-left hover:shadow-md transition-all group border border-transparent hover:border-blue-100"
+                    className="bg-white rounded-2xl p-6 hover:shadow-md transition-all group border border-transparent hover:border-blue-100 flex flex-col"
                 >
-                    {/* Icon from lucide-react */}
-                    <div className="mb-4">
-                        <div
-                            className={`w-14 h-14 rounded-xl flex items-center justify-center ${d.bgColor || folderBgColors[idx % folderBgColors.length]
-                                }`}
-                        >
-                            <span className={d.iconColor || folderColors[idx % folderColors.length]}>
-                                {d.icon || <Folder size={28} className={folderColors[idx % folderColors.length]} />}
-                            </span>
+                    {/* Icon and Content */}
+                    <button
+                        onClick={() => onSelect(d.key)}
+                        className="text-left flex-1"
+                    >
+                        <div className="mb-4">
+                            <div
+                                className={`w-14 h-14 rounded-xl flex items-center justify-center ${d.bgColor || folderBgColors[idx % folderBgColors.length]
+                                    }`}
+                            >
+                                <span className={d.iconColor || folderColors[idx % folderColors.length]}>
+                                    {d.icon || <Folder size={28} className={folderColors[idx % folderColors.length]} />}
+                                </span>
+                            </div>
                         </div>
+                        <h3 className="text-[14px] font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                            {d.label}
+                        </h3>
+                        <p className="text-[12px] text-gray-400 mt-1">{d.count} ta</p>
+                    </button>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <button
+                            onClick={() => onEdit?.(d.key)}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                        >
+                            <Pencil size={14} />
+                            Tahrirlash
+                        </button>
+                        <button
+                            onClick={() => onDelete?.(d.key)}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                        >
+                            <Trash2 size={14} />
+                            O'chirish
+                        </button>
                     </div>
-                    <h3 className="text-[14px] font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                        {d.label}
-                    </h3>
-                    <p className="text-[12px] text-gray-400 mt-1">{d.count} ta</p>
-                </button>
+                </div>
             ))}
         </div>
     )
@@ -204,6 +232,8 @@ export default function EmployeesPage() {
     const [folders, setFolders] = useState<DeptFolder[]>(loadFolders)
     const [showAdd, setShowAdd] = useState(false)
     const [showAddRole, setShowAddRole] = useState(false)
+    const [editDepartment, setEditDepartment] = useState<DeptFolder | null>(null)
+    const [deleteDepartment, setDeleteDepartment] = useState<DeptFolder | null>(null)
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -228,6 +258,32 @@ export default function EmployeesPage() {
         saveFolders(updated)
         // Folder listga qaytish uchun /employees ga navigate
         if (dept) navigate('/employees')
+    }
+
+    const handleEdit = (key: string) => {
+        const department = folders.find((d) => d.key === key)
+        if (department) {
+            setEditDepartment(department)
+        }
+    }
+
+    const handleDelete = (key: string) => {
+        const department = folders.find((d) => d.key === key)
+        if (department) {
+            setDeleteDepartment(department)
+        }
+    }
+
+    const handleSaveEdit = (key: string, newLabel: string) => {
+        const updated = folders.map((f) => (f.key === key ? { ...f, label: newLabel } : f))
+        setFolders(updated)
+        saveFolders(updated)
+    }
+
+    const handleConfirmDelete = (key: string) => {
+        const updated = folders.filter((f) => f.key !== key)
+        setFolders(updated)
+        saveFolders(updated)
     }
 
     const currentFolder = folders.find((d) => d.key === dept)
@@ -277,6 +333,8 @@ export default function EmployeesPage() {
                 <FolderList
                     folders={folders}
                     onSelect={(key) => navigate(`/employees/${key}`)}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                 />
             ) : (
                 <EmployeeTable employees={employees} />
@@ -292,6 +350,18 @@ export default function EmployeesPage() {
                 open={showAddRole}
                 onClose={() => setShowAddRole(false)}
                 onAdd={handleAddRole}
+            />
+            <EditDepartmentModal
+                open={editDepartment !== null}
+                onClose={() => setEditDepartment(null)}
+                department={editDepartment}
+                onSave={handleSaveEdit}
+            />
+            <DeleteDepartmentModal
+                open={deleteDepartment !== null}
+                onClose={() => setDeleteDepartment(null)}
+                department={deleteDepartment}
+                onConfirm={handleConfirmDelete}
             />
         </div>
     )

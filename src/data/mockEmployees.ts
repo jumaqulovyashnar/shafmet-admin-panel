@@ -34,7 +34,6 @@ const lastNames = [
 
 function genPhone(i: number) {
     const area = 201 + (i % 799)
-    const mid = String(100 + (i * 7) % 900).padStart(3, '0')
     const end = String((i * 13) % 10000).padStart(4, '0')
     return `(${area}) 555-${end}`
 }

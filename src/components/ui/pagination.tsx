@@ -7,7 +7,7 @@ interface PaginationProps {
     dateLabel?: string
 }
 
-export default function Pagination({ page, totalPages, onChange, dateLabel }: PaginationProps) {
+export default function Pagination({ page, totalPages, onChange }: PaginationProps) {
     const getPages = () => {
         const pages: (number | '...')[] = []
         if (totalPages <= 7) {

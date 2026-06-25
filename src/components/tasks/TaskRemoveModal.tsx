@@ -9,7 +9,7 @@ interface TaskRemoveModalProps {
     employeeName: string
 }
 
-export default function TaskRemoveModal({ open, onClose, employeeName }: TaskRemoveModalProps) {
+export default function TaskRemoveModal({ open, onClose }: TaskRemoveModalProps) {
     const [form, setForm] = useState({ title: '', description: '' })
 
     const handleRemove = () => {
