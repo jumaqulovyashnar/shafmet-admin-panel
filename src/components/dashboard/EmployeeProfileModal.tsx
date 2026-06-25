@@ -79,7 +79,7 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="max-w-[1100px] max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl" hideClose>
+            <DialogContent className="max-w-[1250px] max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl" hideClose>
                 {/* Close Button */}
                 <button
                     onClick={onClose}
@@ -168,8 +168,8 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
                                         key={tab.key}
                                         onClick={() => setActiveTab(tab.key)}
                                         className={`px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === tab.key
-                                                ? 'text-blue-600'
-                                                : 'text-gray-500 hover:text-gray-800'
+                                            ? 'text-blue-600'
+                                            : 'text-gray-500 hover:text-gray-800'
                                             }`}
                                     >
                                         {tab.label}
