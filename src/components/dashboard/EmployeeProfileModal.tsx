@@ -79,11 +79,11 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="max-w-[1250px] max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl" hideClose>
+            <DialogContent className="max-w-[1300px] max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl" hideClose>
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 z-50 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+                    className="absolute top-3 right-1 z-[60] w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
                 >
                     <X size={16} />
                 </button>
@@ -98,7 +98,6 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>
-                            <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
                         </div>
 
                         <h2 className="text-base font-bold text-gray-900 text-center mb-1">{employee.name}</h2>
