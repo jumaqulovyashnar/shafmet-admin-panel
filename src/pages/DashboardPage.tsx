@@ -82,7 +82,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Store cards row */}
-            <div className="flex gap-[10px]">
+            <div className="grid grid-cols-4 gap-5">
                 <StoreCard
                     title="Ichki Do'kon"
                     subtitle="Ichki do'kon statistikasi umumiy"
@@ -101,6 +101,12 @@ export default function DashboardPage() {
                     subtitle="Personallar Statistikasi"
                     percentage={65}
                     color="#a855f7"
+                />
+                <StoreCard
+                    title="Buxgalterlar"
+                    subtitle="Buxgalterlar Statistikasi"
+                    percentage={65}
+                    color="#3b82f6"
                 />
             </div>
 

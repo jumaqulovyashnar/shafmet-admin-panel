@@ -10,7 +10,7 @@ interface EmployeesTableProps {
     loading?: boolean
 }
 
-const FILTERS = ['Ichki Dokon', 'Tashqi Dokon', 'Barchasi']
+const FILTERS = ['Barchasi', 'Ichki Dokon', 'Tashqi Dokon', 'Personallar', 'Buxgalterlar']
 
 function efficiencyStyle(val: number) {
     if (val >= 70) return 'bg-emerald-100 text-emerald-700'
@@ -22,13 +22,16 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('Barchasi')
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
     const filtered = employees.filter((e) => {
         const matchSearch = e.name.toLowerCase().includes(search.toLowerCase())
         const matchFilter =
             filter === 'Barchasi' ||
             (filter === 'Ichki Dokon' && e.location === 'Ichki dokon') ||
-            (filter === 'Tashqi Dokon' && e.location === 'Tashqi dokon')
+            (filter === 'Tashqi Dokon' && e.location === 'Tashqi dokon') ||
+            (filter === 'Personallar' && e.location === 'Personallar') ||
+            (filter === 'Buxgalterlar' && e.location === 'Buxgalterlar')
         return matchSearch && matchFilter
     })
 
@@ -40,7 +43,7 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
                     <h3 className="font-semibold text-gray-900">Barcha Xodimlar</h3>
                     <p className="text-xs text-[#64b5f6] mt-0.5">umumiy faolliglar</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     {/* Search */}
                     <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
@@ -53,22 +56,30 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
                     </div>
                     {/* Filter dropdown */}
                     <div className="relative">
-                        <button className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-3 h-8 text-gray-600 hover:bg-gray-50 transition-colors">
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-3 h-8 text-gray-600 hover:bg-gray-50 transition-colors"
+                        >
                             Tanlash: {filter}
                             <ChevronDown size={12} />
                         </button>
-                        {/* Simple dropdown */}
-                        <div className="absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-36 hidden group-focus:block">
-                            {FILTERS.map((f) => (
-                                <button
-                                    key={f}
-                                    onClick={() => setFilter(f)}
-                                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50"
-                                >
-                                    {f}
-                                </button>
-                            ))}
-                        </div>
+                        {isDropdownOpen && (
+                            <div className="absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
+                                {FILTERS.map((f) => (
+                                    <button
+                                        key={f}
+                                        onClick={() => {
+                                            setFilter(f)
+                                            setIsDropdownOpen(false)
+                                        }}
+                                        className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 transition-colors ${filter === f ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
+                                            }`}
+                                    >
+                                        {f}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

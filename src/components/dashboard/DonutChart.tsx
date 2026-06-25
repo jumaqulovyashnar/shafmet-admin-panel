@@ -21,17 +21,17 @@ export default function DonutChart({
             <svg
                 width={size}
                 height={size}
-                className="transition-transform duration-500 group-hover:rotate-180"
+                className="transition-transform duration-1000 group-hover:rotate-180"
                 style={{ transform: 'rotate(-90deg)' }}
                 viewBox={`0 0 ${size} ${size}`}
             >
-                {/* Background track - light purple/gray full circle */}
+                {/* Background track - light gray full circle */}
                 <circle
                     cx={center}
                     cy={center}
                     r={radius}
                     fill="none"
-                    stroke="#e8e7f3"
+                    stroke="#f3f4f6"
                     strokeWidth={strokeWidth}
                 />
                 {/* Progress arc - colored portion */}
@@ -44,7 +44,7 @@ export default function DonutChart({
                     strokeWidth={strokeWidth}
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
-                    className="transition-all duration-500"
+                    className="transition-all duration-1000"
                 />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center px-6">

@@ -12,7 +12,7 @@ export default function StoreCard({ title, subtitle, percentage, color, onClick 
     return (
         <div
             onClick={onClick}
-            className={`bg-white rounded-[32px] p-6 flex-1 min-w-0 max-w-[calc(33.333%-7px)] transition-all duration-500 ease-in-out border border-gray-200 shadow-sm ${onClick ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : ''
+            className={`bg-white rounded-[32px] p-6 transition-all duration-500 ease-in-out border border-gray-200 ${onClick ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : ''
                 }`}
         >
             <div className="mb-6">
