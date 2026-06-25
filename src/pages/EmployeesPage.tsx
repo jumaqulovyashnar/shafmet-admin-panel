@@ -40,7 +40,7 @@ const defaultFolders: DeptFolder[] = [
     {
         key: 'personallar',
         label: 'Personallar',
-        count: 12,
+        count: 500,
         icon: <Users size={28} />,
         bgColor: 'bg-purple-100',
         iconColor: 'text-purple-500'
@@ -64,7 +64,7 @@ function getDeptEmployees(key: string): Employee[] {
     switch (key) {
         case 'ichki': return ichkiDokonEmployees
         case 'tashqi': return tashqiDokonEmployees
-        case 'personallar': return allEmployees.slice(0, 12)
+        case 'personallar': return allEmployees.slice(0, 500)
         default: return []
     }
 }

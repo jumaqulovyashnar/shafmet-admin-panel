@@ -76,7 +76,7 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-6">
+      <DialogContent className="max-w-3xl min-w-[768px] max-h-[90vh] overflow-hidden flex flex-col p-6">
         <DialogHeader>
           <DialogTitle>{cfg.title}</DialogTitle>
           <DialogDescription className={`font-semibold text-sm ${cfg.subColor}`}>

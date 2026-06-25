@@ -26,8 +26,8 @@ export default function TasksPage() {
         switch (key) {
             case 'ichki': return ichkiDokonEmployees
             case 'tashqi': return tashqiDokonEmployees
-            case 'personallar': return allEmployees.slice(0, 30)
-            case 'buxgalter': return allEmployees.slice(30, 50)
+            case 'personallar': return allEmployees.slice(0, 500)
+            case 'buxgalter': return allEmployees.slice(0, 500)
             default: return []
         }
     }

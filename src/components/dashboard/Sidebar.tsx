@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, ClipboardList, UserPlus,
-  ShoppingCart, MapPin, Building2, Menu, LogOut,
+  Menu, LogOut, Users,
 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import useUserStore from '@/stores/userStore'
 import { cn } from '@/lib/utils'
+import { icons } from '@/api/constant/icons'
 
 interface NavItem {
   label: string
@@ -15,12 +15,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Asosiy Sahifa', icon: <LayoutDashboard size={18} />, href: '/dashboard' },
-  { label: 'Topshiriqlar', icon: <ClipboardList size={18} />, href: '/tasks' },
-  { label: "Ishchi Qo'shish", icon: <UserPlus size={18} />, href: '/employees' },
-  { label: 'Tolovlar', icon: <ShoppingCart size={18} />, href: '/payments' },
-  { label: 'Geolokatsiya', icon: <MapPin size={18} />, href: '/geo' },
-  { label: "Maxsus Bo'lim", icon: <Building2 size={18} />, href: '/departments' },
+  { label: 'Asosiy Sahifa', icon: <img src={icons.key} alt="" className="w-5 h-5 object-contain" />, href: '/dashboard' },
+  { label: 'Topshiriqlar', icon: <img src={icons.box} alt="" className="w-5 h-5 object-contain" />, href: '/tasks' },
+  { label: "Ishchi Qo'shish", icon: <Users size={20} className="w-5 h-5" />, href: '/employees' },
+  { label: 'Tolovlar', icon: <img src={icons.wallet} alt="" className="w-5 h-5 object-contain" />, href: '/payments' },
+  { label: 'Geolokatsiya', icon: <img src={icons.circle} alt="" className="w-5 h-5 object-contain" />, href: '/geo' },
+  { label: "Maxsus Bo'lim", icon: <img src={icons.support} alt="" className="w-5 h-5 object-contain" />, href: '/departments' },
 ]
 
 export default function Sidebar() {
@@ -48,9 +48,12 @@ export default function Sidebar() {
         collapsed ? 'justify-center' : 'justify-between'
       )}>
         {!collapsed && (
-          <span className="font-bold text-[15px] text-gray-900 flex-1 whitespace-nowrap">
-            Admin Panel
-          </span>
+          <div className="flex items-center gap-2">
+            <img src={icons.main1} alt="" className="w-6 h-6" />
+            <span className="font-bold text-[15px] text-gray-900 flex-1 whitespace-nowrap">
+              Admin Panel
+            </span>
+          </div>
         )}
 
         <button
@@ -75,11 +78,11 @@ export default function Sidebar() {
                 'flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl text-[13px] font-medium transition-all',
                 collapsed && 'justify-center px-0',
                 isActive
-                  ? 'bg-[#1976d2] text-white shadow-sm'
+                  ? 'bg-[#1976d2] text-white shadow-sm [&_img]:brightness-0 [&_img]:invert [&_svg]:stroke-white'
                   : 'text-gray-500 hover:bg-[#1976d2]/10 hover:text-gray-800'
               )}
             >
-              <span className="shrink-0">{item.icon}</span>
+              <span className="shrink-0 flex items-center justify-start w-5 h-5">{item.icon}</span>
               {!collapsed && <span className="truncate">{item.label}</span>}
             </Link>
           )
@@ -97,7 +100,7 @@ export default function Sidebar() {
             collapsed && 'justify-center px-0'
           )}
         >
-          <span className="shrink-0"><LogOut size={18} /></span>
+          <span className="shrink-0 flex items-center justify-center w-5 h-5"><LogOut size={20} className="w-5 h-5" /></span>
           {!collapsed && <span className="truncate">Chiqish</span>}
         </button>
       </nav>

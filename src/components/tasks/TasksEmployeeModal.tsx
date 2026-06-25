@@ -33,7 +33,7 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
     return (
         <>
             <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-6">
+                <DialogContent className="max-w-3xl min-w-[768px] max-h-[90vh] overflow-hidden flex flex-col p-6">
                     <DialogHeader>
                         <DialogTitle>{title}</DialogTitle>
                         <DialogDescription className="text-blue-600 font-semibold text-sm">

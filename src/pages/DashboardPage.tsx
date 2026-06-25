@@ -33,7 +33,7 @@ export default function DashboardPage() {
                 {/* Card 1 */}
                 <div
                     onClick={() => setModal('kelganlar')}
-                    className="flex items-center gap-4 flex-1 pr-5 cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
+                    className="flex items-center gap-4 flex-1 pr-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
                 >
                     <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                         <img src={images.profile1} alt="" className="w-8 h-8" />
@@ -51,7 +51,7 @@ export default function DashboardPage() {
                 {/* Card 2 */}
                 <div
                     onClick={() => setModal('kechikkanlar')}
-                    className="flex items-center gap-4 flex-1 px-5 cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
+                    className="flex items-center gap-4 flex-1 px-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
                 >
                     <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                         <img src={images.profile2} alt="" className="w-8 h-8" />
@@ -69,7 +69,7 @@ export default function DashboardPage() {
                 {/* Card 3 */}
                 <div
                     onClick={() => setModal('kelmaganlar')}
-                    className="flex items-center gap-4 flex-1 pl-5 cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
+                    className="flex items-center gap-4 flex-1 pl-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
                 >
                     <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                         <img src={images.profile3} alt="" className="w-8 h-8" />

@@ -45,8 +45,8 @@ function genIp(i: number) {
 
 const locations: ('Ichki dokon' | 'Tashqi dokon')[] = ['Ichki dokon', 'Tashqi dokon']
 
-export const allEmployees: Employee[] = Array.from({ length: 100 }, (_, i) => {
-    const h = i < 70 ? 7 : i < 88 ? 8 : 9
+export const allEmployees: Employee[] = Array.from({ length: 500 }, (_, i) => {
+    const h = i < 350 ? 7 : i < 440 ? 8 : 9
     const m = (i * 7) % 60
     return {
         id: i + 1,
@@ -65,19 +65,19 @@ export const allEmployees: Employee[] = Array.from({ length: 100 }, (_, i) => {
 export const onTimeEmployees = allEmployees.filter((e) => {
     const [h] = e.arrivalTime.split(':').map(Number)
     return h <= 7
-}).slice(0, 50)
+}).slice(0, 500)
 
 export const lateEmployees = allEmployees.filter((e) => {
     const [h] = e.arrivalTime.split(':').map(Number)
     return h === 8
-}).slice(0, 50)
+}).slice(0, 500)
 
-export const absentEmployees: Employee[] = Array.from({ length: 50 }, (_, i) => ({
-    id: 1000 + i,
+export const absentEmployees: Employee[] = Array.from({ length: 500 }, (_, i) => ({
+    id: 10000 + i,
     name: `${firstNames[(i + 50) % firstNames.length]} ${lastNames[(i + 40) % lastNames.length]}`,
     location: locations[i % 2],
-    phone: genPhone(200 + i),
-    ip: genIp(200 + i),
+    phone: genPhone(2000 + i),
+    ip: genIp(2000 + i),
     arrivalTime: `${10 + (i % 3)}:${String((i * 11) % 60).padStart(2, '0')}`,
     balance: 0,
     efficiency: 0,
@@ -85,5 +85,5 @@ export const absentEmployees: Employee[] = Array.from({ length: 50 }, (_, i) => 
     tasks: 0,
 }))
 
-export const ichkiDokonEmployees = allEmployees.filter((e) => e.location === 'Ichki dokon').slice(0, 50)
-export const tashqiDokonEmployees = allEmployees.filter((e) => e.location === 'Tashqi dokon').slice(0, 50)
+export const ichkiDokonEmployees = allEmployees.filter((e) => e.location === 'Ichki dokon').slice(0, 500)
+export const tashqiDokonEmployees = allEmployees.filter((e) => e.location === 'Tashqi dokon').slice(0, 500)

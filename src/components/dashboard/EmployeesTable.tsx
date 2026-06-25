@@ -111,7 +111,7 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
                                         {emp.balance.toLocaleString()} so'm
                                     </td>
                                     <td className="py-3 px-3">
-                                        <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${efficiencyStyle(emp.efficiency)}`}>
+                                        <span className={`inline-flex items-center rounded-md px-3 py-1 text-xs font-semibold ${efficiencyStyle(emp.efficiency)}`}>
                                             {emp.efficiency}%
                                         </span>
                                     </td>
