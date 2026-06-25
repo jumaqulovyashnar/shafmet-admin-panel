@@ -83,7 +83,7 @@ export default function EmployeeProfileModal({ open, onClose, employee }: Employ
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-3 right-1 z-[60] w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                    className="absolute top-2 right-1 z-[60] w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
                 >
                     <X size={16} />
                 </button>
