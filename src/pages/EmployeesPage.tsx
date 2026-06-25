@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, SlidersHorizontal, Search, ChevronDown, UserPlus, ShieldPlus, Folder, Store, Users, Pencil, Trash2 } from 'lucide-react'
+import { Plus, SlidersHorizontal, Search, ChevronDown, ShieldPlus, Folder, Store, Users, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/ui/pagination'
-import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import AddRoleModal from '@/components/employees/AddRoleModal'
 import EditDepartmentModal from '@/components/employees/EditDepartmentModal'
 import DeleteDepartmentModal from '@/components/employees/DeleteDepartmentModal'
@@ -230,7 +229,6 @@ export default function EmployeesPage() {
     const { dept } = useParams<{ dept?: string }>()
     const navigate = useNavigate()
     const [folders, setFolders] = useState<DeptFolder[]>(loadFolders)
-    const [showAdd, setShowAdd] = useState(false)
     const [showAddRole, setShowAddRole] = useState(false)
     const [editDepartment, setEditDepartment] = useState<DeptFolder | null>(null)
     const [deleteDepartment, setDeleteDepartment] = useState<DeptFolder | null>(null)
@@ -296,30 +294,33 @@ export default function EmployeesPage() {
                 <div className="relative" ref={dropdownRef}>
                     <Button
                         onClick={() => setDropdownOpen((o) => !o)}
-                        className="bg-[#64b5f6] hover:bg-[#42a5f5] h-9 px-4 rounded-xl gap-1.5 text-[13px] font-semibold"
+                        className="bg-[#64b5f6] hover:bg-[#42a5f5] h-9 px-4 rounded-xl gap-1.5 text-[13px] font-semibold shadow-sm"
                     >
-                        <Plus size={15} />
-                        Yangi Qoshish
+                        <ShieldPlus size={15} />
+                        Yangi Rol
+                        <ChevronDown size={14} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                     </Button>
 
                     {dropdownOpen && (
-                        <div className="absolute left-full top-0 ml-2 bg-white rounded-xl border border-gray-200 shadow-lg z-20 min-w-[200px] overflow-hidden">
-                            <button
-                                onClick={() => { setShowAdd(true); setDropdownOpen(false) }}
-                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-[#64b5f6]/10 hover:text-[#64b5f6] transition-colors"
-                            >
-                                <UserPlus size={15} />
-                                Yangi Hodim
-                            </button>
-                            <div className="h-px bg-gray-100 mx-2" />
-                            <button
-                                onClick={() => { setShowAddRole(true); setDropdownOpen(false) }}
-                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-[#64b5f6]/10 hover:text-[#64b5f6] transition-colors"
-                            >
-                                <ShieldPlus size={15} />
-                                Yangi Rol
-                            </button>
-                        </div>
+                        <>
+                            <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
+                            <div className="absolute left-0 top-full mt-2 bg-white rounded-xl border border-gray-100 shadow-lg z-20 w-[240px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="p-2">
+                                    <button
+                                        onClick={() => { setShowAddRole(true); setDropdownOpen(false) }}
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-[13px] text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all font-medium"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                                            <ShieldPlus size={16} className="text-blue-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="font-semibold">Yangi Rol</div>
+                                            <div className="text-[11px] text-gray-400">Yangi rol qo'shish</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
 
@@ -341,11 +342,6 @@ export default function EmployeesPage() {
             )}
 
             {/* Modals */}
-            <AddEmployeeModal
-                open={showAdd}
-                onClose={() => setShowAdd(false)}
-                defaultLocation={currentFolder?.label}
-            />
             <AddRoleModal
                 open={showAddRole}
                 onClose={() => setShowAddRole(false)}
