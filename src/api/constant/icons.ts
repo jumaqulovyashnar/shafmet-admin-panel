@@ -11,5 +11,4 @@ export const icons = {
     wallet,
     circle,
     support,
-
 }

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
@@ -44,18 +44,20 @@
   * {
     border-color: hsl(var(--border));
     box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
   }
 
   html,
   body,
   #root {
     height: 100%;
+    font-family: 'Poppins', sans-serif;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: var(--text-sm);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -63,6 +65,15 @@
   }
 
   /* Consistent heading sizes */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Poppins', sans-serif;
+  }
+
   h1 {
     font-size: var(--text-3xl);
     font-weight: 700;

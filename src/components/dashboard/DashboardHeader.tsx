@@ -1,6 +1,5 @@
-import { Search, Calendar, ChevronDown, X } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { useLocation, Link } from 'react-router-dom'
-import { useState, useRef, useEffect } from 'react'
 
 interface Crumb { label: string; href?: string }
 
@@ -34,25 +33,6 @@ function getBreadcrumbs(pathname: string): Crumb[] {
 export default function DashboardHeader() {
     const location = useLocation()
     const crumbs = getBreadcrumbs(location.pathname)
-    const [showCalendar, setShowCalendar] = useState(false)
-    const [selectedDate, setSelectedDate] = useState('')
-    const calendarRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
-                setShowCalendar(false)
-            }
-        }
-
-        if (showCalendar) {
-            document.addEventListener('mousedown', handleClickOutside)
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-        }
-    }, [showCalendar])
 
     return (
         <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-30">
@@ -80,29 +60,12 @@ export default function DashboardHeader() {
             {/* Right */}
             <div className="flex items-center gap-3 mr-12">
                 {/* Filtr with date picker */}
-                <div className="relative" ref={calendarRef}>
-                    <button
-                        onClick={() => setShowCalendar(!showCalendar)}
-                        className="flex items-center gap-2 text-[13px] text-gray-500 border border-gray-200 rounded-xl px-5 h-9 hover:bg-gray-50 transition-colors min-w-[160px] cursor-pointer"
-                    >
-                        <Calendar size={14} />
-                        <span>{selectedDate || 'Sana tanlang'}</span>
-                    </button>
-
-                    {showCalendar && (
-                        <div className="absolute top-[calc(100%+5px)] left-0 bg-white border border-gray-200 rounded-xl shadow-lg p-3 z-50 min-w-[280px]">
-                            <input
-                                type="date"
-                                className="w-full text-[13px] text-gray-700 border border-gray-200 rounded-lg px-3 py-2 cursor-pointer"
-                                value={selectedDate}
-                                onChange={(e) => {
-                                    setSelectedDate(e.target.value)
-                                    setShowCalendar(false)
-                                }}
-                                style={{ colorScheme: 'light' }}
-                            />
-                        </div>
-                    )}
+                <div className="relative">
+                    <input
+                        type="date"
+                        className="flex items-center gap-2 text-[13px] text-gray-700 border border-gray-200 rounded-xl px-5 h-9 hover:bg-gray-50 transition-colors min-w-[160px] cursor-pointer"
+                        style={{ colorScheme: 'light' }}
+                    />
                 </div>
 
                 {/* Search */}

@@ -62,15 +62,31 @@ export const allEmployees: Employee[] = Array.from({ length: 500 }, (_, i) => {
     }
 })
 
-export const onTimeEmployees = allEmployees.filter((e) => {
-    const [h] = e.arrivalTime.split(':').map(Number)
-    return h <= 7
-}).slice(0, 500)
+export const onTimeEmployees: Employee[] = Array.from({ length: 500 }, (_, i) => ({
+    id: 20000 + i,
+    name: `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`,
+    location: locations[i % 2],
+    phone: genPhone(i),
+    ip: genIp(i),
+    arrivalTime: `7:${String((i * 7) % 60).padStart(2, '0')}`,
+    balance: Math.round((5000 + (i * 1234) % 55000) / 1000) * 1000,
+    efficiency: 10 + (i * 17) % 91,
+    attempts: 1 + (i % 10),
+    tasks: (i * 3) % 9,
+}))
 
-export const lateEmployees = allEmployees.filter((e) => {
-    const [h] = e.arrivalTime.split(':').map(Number)
-    return h === 8
-}).slice(0, 500)
+export const lateEmployees: Employee[] = Array.from({ length: 500 }, (_, i) => ({
+    id: 5000 + i,
+    name: `${firstNames[(i + 25) % firstNames.length]} ${lastNames[(i + 30) % lastNames.length]}`,
+    location: locations[i % 2],
+    phone: genPhone(1000 + i),
+    ip: genIp(1000 + i),
+    arrivalTime: `8:${String((i * 7) % 60).padStart(2, '0')}`,
+    balance: Math.round((5000 + (i * 1234) % 55000) / 1000) * 1000,
+    efficiency: 10 + (i * 17) % 91,
+    attempts: 1 + (i % 10),
+    tasks: (i * 3) % 9,
+}))
 
 export const absentEmployees: Employee[] = Array.from({ length: 500 }, (_, i) => ({
     id: 10000 + i,
