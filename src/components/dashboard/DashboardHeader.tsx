@@ -59,12 +59,13 @@ export default function DashboardHeader() {
 
             {/* Right */}
             <div className="flex items-center gap-3 mr-12">
-                {/* Filtr */}
-                <button className="flex items-center gap-2 text-[13px] text-gray-500 border border-gray-200 rounded-lg px-5 h-9 hover:bg-gray-50 transition-colors min-w-[160px]">
-                    <Calendar size={14} className="text-gray-400" />
-                    <span>Filtrlar oylik</span>
-                    <ChevronDown size={12} />
-                </button>
+                {/* Filtr with date picker */}
+                <div className="relative">
+                    <input
+                        type="date"
+                        className="flex items-center gap-2 text-[13px] text-gray-500 border border-gray-200 rounded-xl px-5 h-9 hover:bg-gray-50 transition-colors min-w-[160px] cursor-pointer"
+                    />
+                </div>
 
                 {/* Search */}
                 <div className="relative">
@@ -72,7 +73,7 @@ export default function DashboardHeader() {
                     <input
                         type="text"
                         placeholder="Qidirish"
-                        className="h-9 pl-9 pr-4 text-[13px] border border-gray-200 rounded-lg outline-none focus:border-[#64b5f6] transition-colors w-56"
+                        className="h-9 pl-9 pr-4 text-[13px] border border-gray-200 rounded-xl outline-none focus:border-[#64b5f6] transition-colors w-56"
                     />
                 </div>
             </div>
