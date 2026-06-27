@@ -29,9 +29,7 @@ export default function EmployeesTable({ employees, loading }: EmployeesTablePro
         const matchFilter =
             filter === 'Barchasi' ||
             (filter === 'Ichki Dokon' && e.location === 'Ichki dokon') ||
-            (filter === 'Tashqi Dokon' && e.location === 'Tashqi dokon') ||
-            (filter === 'Personallar' && e.location === 'Personallar') ||
-            (filter === 'Buxgalterlar' && e.location === 'Buxgalterlar')
+            (filter === 'Tashqi Dokon' && e.location === 'Tashqi dokon')
         return matchSearch && matchFilter
     })
 

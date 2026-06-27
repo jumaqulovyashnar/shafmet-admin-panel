@@ -6,7 +6,6 @@
       "ES2023",
       "DOM"
     ],
-    "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
       "@/*": [

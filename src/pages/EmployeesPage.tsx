@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, SlidersHorizontal, Search, ChevronDown, ShieldPlus, Folder, Store, Users, Pencil, Trash2 } from 'lucide-react'
+import { SlidersHorizontal, Search, ChevronDown, Folder, Store, Users, Pencil, Trash2, UserPlus, ShieldPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/ui/pagination'
+import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import AddRoleModal from '@/components/employees/AddRoleModal'
 import EditDepartmentModal from '@/components/employees/EditDepartmentModal'
 import DeleteDepartmentModal from '@/components/employees/DeleteDepartmentModal'
@@ -105,9 +106,9 @@ function FolderList({
                                 className={`w-14 h-14 rounded-xl flex items-center justify-center ${d.bgColor || folderBgColors[idx % folderBgColors.length]
                                     }`}
                             >
-                                <span className={d.iconColor || folderColors[idx % folderColors.length]}>
-                                    {d.icon || <Folder size={28} className={folderColors[idx % folderColors.length]} />}
-                                </span>
+                                <div className={d.iconColor || folderColors[idx % folderColors.length]}>
+                                    {d.icon || <Folder size={28} />}
+                                </div>
                             </div>
                         </div>
                         <h3 className="text-[14px] font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
@@ -229,21 +230,11 @@ export default function EmployeesPage() {
     const { dept } = useParams<{ dept?: string }>()
     const navigate = useNavigate()
     const [folders, setFolders] = useState<DeptFolder[]>(loadFolders)
+    const [showAddEmployee, setShowAddEmployee] = useState(false)
     const [showAddRole, setShowAddRole] = useState(false)
     const [editDepartment, setEditDepartment] = useState<DeptFolder | null>(null)
     const [deleteDepartment, setDeleteDepartment] = useState<DeptFolder | null>(null)
-    const [dropdownOpen, setDropdownOpen] = useState(false)
-    const dropdownRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-                setDropdownOpen(false)
-            }
-        }
-        document.addEventListener('mousedown', handler)
-        return () => document.removeEventListener('mousedown', handler)
-    }, [])
+    const [accordionOpen, setAccordionOpen] = useState(false)
 
     // Yangi rol qo'shilganda folders ga yangi card qo'shiladi va sessionStorage ga saqlanadi
     const handleAddRole = (role: { title: string; principle: string; showInDiagram: boolean }) => {
@@ -284,44 +275,43 @@ export default function EmployeesPage() {
         saveFolders(updated)
     }
 
-    const currentFolder = folders.find((d) => d.key === dept)
     const employees = dept ? getDeptEmployees(dept) : []
 
     return (
         <div className="space-y-4">
             {/* Top bar */}
             <div className="flex items-center justify-between">
-                <div className="relative" ref={dropdownRef}>
-                    <Button
-                        onClick={() => setDropdownOpen((o) => !o)}
-                        className="bg-[#64b5f6] hover:bg-[#42a5f5] h-9 px-4 rounded-xl gap-1.5 text-[13px] font-semibold shadow-sm"
-                    >
-                        <ShieldPlus size={15} />
-                        Yangi Rol
-                        <ChevronDown size={14} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-                    </Button>
-
-                    {dropdownOpen && (
-                        <>
-                            <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                            <div className="absolute left-0 top-full mt-2 bg-white rounded-xl border border-gray-100 shadow-lg z-20 w-[240px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="p-2">
-                                    <button
-                                        onClick={() => { setShowAddRole(true); setDropdownOpen(false) }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-[13px] text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all font-medium"
-                                    >
-                                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                                            <ShieldPlus size={16} className="text-blue-600" />
-                                        </div>
-                                        <div className="text-left">
-                                            <div className="font-semibold">Yangi Rol</div>
-                                            <div className="text-[11px] text-gray-400">Yangi rol qo'shish</div>
-                                        </div>
-                                    </button>
-                                </div>
+                <div className="w-48">
+                    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+                        <button
+                            onClick={() => setAccordionOpen(!accordionOpen)}
+                            className="w-full flex items-center justify-between bg-[#64b5f6] hover:bg-[#42a5f5] text-white px-3 py-2 text-[13px] font-semibold transition-colors"
+                        >
+                            <span>Yangi Qo'shish</span>
+                            <ChevronDown
+                                size={14}
+                                className={`transition-transform duration-200 ${accordionOpen ? 'rotate-180' : ''}`}
+                            />
+                        </button>
+                        {accordionOpen && (
+                            <div className="p-2 bg-white">
+                                <button
+                                    onClick={() => { setShowAddEmployee(true); setAccordionOpen(false) }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-700 hover:bg-blue-50 rounded-lg transition-colors font-medium mb-1"
+                                >
+                                    <UserPlus size={14} className="text-blue-600" />
+                                    <span>Yangi hodim</span>
+                                </button>
+                                <button
+                                    onClick={() => { setShowAddRole(true); setAccordionOpen(false) }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-700 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+                                >
+                                    <ShieldPlus size={14} className="text-blue-600" />
+                                    <span>Yangi rol</span>
+                                </button>
                             </div>
-                        </>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
@@ -342,6 +332,10 @@ export default function EmployeesPage() {
             )}
 
             {/* Modals */}
+            <AddEmployeeModal
+                open={showAddEmployee}
+                onClose={() => setShowAddEmployee(false)}
+            />
             <AddRoleModal
                 open={showAddRole}
                 onClose={() => setShowAddRole(false)}
