@@ -36,8 +36,6 @@ function getStoredAccessToken(): string {
     const fromStore = useUserStore.getState().userToken?.accessToken
     if (fromStore) return fromStore
     if (typeof window === 'undefined') return ''
-    const fromSession = sessionStorage.getItem('linguapro_access_token') ?? ''
-    if (fromSession) return fromSession
     const fromLocal = localStorage.getItem('access_token') ?? ''
     return fromLocal
 }
