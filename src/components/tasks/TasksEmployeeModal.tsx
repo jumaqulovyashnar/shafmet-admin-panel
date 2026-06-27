@@ -6,29 +6,50 @@ import { Button } from '@/components/ui/button'
 import Pagination from '@/components/ui/pagination'
 import TaskAssignModal from './TaskAssignModal'
 import TaskRemoveModal from './TaskRemoveModal'
-import type { Employee } from '@/types/dashboard'
+import type { Worker } from '@/types/inspection'
 
 interface TasksEmployeeModalProps {
     open: boolean
     onClose: () => void
     title: string
-    employees: Employee[]
+    workers: Worker[]
 }
 
 const ITEMS_PER_PAGE = 10
 
-export default function TasksEmployeeModal({ open, onClose, title, employees }: TasksEmployeeModalProps) {
+export default function TasksEmployeeModal({ open, onClose, title, workers }: TasksEmployeeModalProps) {
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
-    const [assignTarget, setAssignTarget] = useState<Employee | null>(null)   // + tugma => hodimga
-    const [removeTarget, setRemoveTarget] = useState<Employee | null>(null)   // - tugma => hodimdan olib tashlash
-    const [showUmumiy, setShowUmumiy] = useState(false)                       // Bo'linga Topshiriq => umumiy
+    const [assignTarget, setAssignTarget] = useState<Worker | null>(null)
+    const [removeTarget, setRemoveTarget] = useState<Worker | null>(null)
+    const [showUmumiy, setShowUmumiy] = useState(false)
 
-    const filtered = employees.filter((e) =>
-        e.name.toLowerCase().includes(search.toLowerCase())
+    const filtered = workers.filter((w) =>
+        w.full_name.toLowerCase().includes(search.toLowerCase()) ||
+        w.phone.includes(search)
     )
     const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
     const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+
+    const getRoleBadge = (role: string) => {
+        const colors: Record<string, string> = {
+            boss: 'bg-purple-100 text-purple-700',
+            manager: 'bg-blue-100 text-blue-700',
+            worker: 'bg-green-100 text-green-700',
+            admin: 'bg-orange-100 text-orange-700',
+        }
+        const labels: Record<string, string> = {
+            boss: 'Rahbar',
+            manager: 'Menejer',
+            worker: 'Ishchi',
+            admin: 'Admin',
+        }
+        return (
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${colors[role] || 'bg-gray-100 text-gray-700'}`}>
+                {labels[role] || role}
+            </span>
+        )
+    }
 
     return (
         <>
@@ -37,7 +58,7 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
                     <DialogHeader>
                         <DialogTitle>{title}</DialogTitle>
                         <DialogDescription className="text-blue-600 font-semibold text-sm">
-                            Topshiriqlar Bo'limi
+                            Topshiriqlar Bo'limi ({filtered.length} ta xodim)
                         </DialogDescription>
                     </DialogHeader>
 
@@ -69,23 +90,42 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
                             <thead className="sticky top-0 bg-white">
                                 <tr className="border-b border-gray-100">
                                     <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Ism Familiyasi</th>
-                                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Ish Joyi</th>
-                                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Telefon Raqami</th>
-                                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Bajargan Vazifalar</th>
+                                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Telefon</th>
+                                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Lavozimi</th>
+                                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Holati</th>
                                     <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Vazifa Berish</th>
                                     <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Vazifa Ayrish</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {paginated.map((emp) => (
-                                    <tr key={emp.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                        <td className="py-2.5 px-3 font-medium text-gray-800 text-sm">{emp.name}</td>
-                                        <td className="py-2.5 px-3 text-gray-400 text-xs">-</td>
-                                        <td className="py-2.5 px-3 text-gray-400 text-xs">-</td>
-                                        <td className="py-2.5 px-3 text-gray-700 text-sm font-medium">{emp.tasks ?? 0}</td>
+                                {paginated.map((worker) => (
+                                    <tr key={worker.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                        <td className="py-2.5 px-3">
+                                            <div className="flex items-center gap-2">
+                                                {worker.avatar || worker.photo ? (
+                                                    <img
+                                                        src={worker.avatar || worker.photo}
+                                                        alt={worker.full_name}
+                                                        className="w-7 h-7 rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-bold">
+                                                        {worker.full_name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <span className="font-medium text-gray-800 text-sm">{worker.full_name}</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-2.5 px-3 text-gray-500 text-xs">{worker.phone}</td>
+                                        <td className="py-2.5 px-3">{getRoleBadge(worker.role)}</td>
+                                        <td className="py-2.5 px-3">
+                                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${worker.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {worker.is_active ? 'Faol' : 'Nofaol'}
+                                            </span>
+                                        </td>
                                         <td className="py-2.5 px-3">
                                             <button
-                                                onClick={() => setAssignTarget(emp)}
+                                                onClick={() => setAssignTarget(worker)}
                                                 className="w-8 h-8 rounded-md bg-[#64b5f6] hover:bg-[#42a5f5] text-white font-bold text-lg flex items-center justify-center transition-colors"
                                             >
                                                 +
@@ -93,7 +133,7 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
                                         </td>
                                         <td className="py-2.5 px-3">
                                             <button
-                                                onClick={() => setRemoveTarget(emp)}
+                                                onClick={() => setRemoveTarget(worker)}
                                                 className="w-8 h-8 rounded-md bg-red-400 hover:bg-red-500 text-white font-bold text-lg flex items-center justify-center transition-colors"
                                             >
                                                 −
@@ -113,14 +153,14 @@ export default function TasksEmployeeModal({ open, onClose, title, employees }: 
             <TaskAssignModal
                 open={!!assignTarget}
                 onClose={() => setAssignTarget(null)}
-                employeeName={assignTarget?.name}
+                employeeName={assignTarget?.full_name}
             />
 
             {/* Hodimdan vazifa olish */}
             <TaskRemoveModal
                 open={!!removeTarget}
                 onClose={() => setRemoveTarget(null)}
-                employeeName={removeTarget?.name ?? ''}
+                employeeName={removeTarget?.full_name ?? ''}
             />
 
             {/* Umumiy vazifa berish */}

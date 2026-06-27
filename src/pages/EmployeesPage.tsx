@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { SlidersHorizontal, Search, ChevronDown, Folder, Store, Users, Pencil, Trash2, UserPlus, ShieldPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { SlidersHorizontal, Search, ChevronDown, Folder, Store, Users, Pencil, Trash2, UserPlus, ShieldPlus, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/ui/pagination'
 import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import AddRoleModal from '@/components/employees/AddRoleModal'
 import EditDepartmentModal from '@/components/employees/EditDepartmentModal'
 import DeleteDepartmentModal from '@/components/employees/DeleteDepartmentModal'
-import { ichkiDokonEmployees, tashqiDokonEmployees, allEmployees } from '@/data/mockEmployees'
-import type { Employee } from '@/types/dashboard'
+import { useWorkers } from '@/hooks/useWorkers'
+import type { Worker } from '@/types/inspection'
 
 /* ---- Department folder config ---- */
 interface DeptFolder {
@@ -21,33 +20,6 @@ interface DeptFolder {
     bgColor?: string
     iconColor?: string
 }
-
-const defaultFolders: DeptFolder[] = [
-    {
-        key: 'ichki',
-        label: 'Ichki dokon ishchilari',
-        count: ichkiDokonEmployees.length,
-        icon: <Store size={28} />,
-        bgColor: 'bg-green-100',
-        iconColor: 'text-green-500'
-    },
-    {
-        key: 'tashqi',
-        label: 'Tashqi dokon ishchilari',
-        count: tashqiDokonEmployees.length,
-        icon: <Store size={28} />,
-        bgColor: 'bg-blue-100',
-        iconColor: 'text-blue-500'
-    },
-    {
-        key: 'personallar',
-        label: 'Personallar',
-        count: 500,
-        icon: <Users size={28} />,
-        bgColor: 'bg-purple-100',
-        iconColor: 'text-purple-500'
-    },
-]
 
 // Folder icon color — static va custom rollarga
 const folderColors = [
@@ -62,20 +34,82 @@ const folderBgColors = [
     'bg-green-100', 'bg-red-100', 'bg-cyan-100',
 ]
 
-function getDeptEmployees(key: string): Employee[] {
-    switch (key) {
-        case 'ichki': return ichkiDokonEmployees
-        case 'tashqi': return tashqiDokonEmployees
-        case 'personallar': return allEmployees.slice(0, 500)
-        default: return []
+const ITEMS_PER_PAGE = 10
+
+/* ---- Role filtering helper ---- */
+function getWorkersByRole(workers: Worker[], roleKey: string): Worker[] {
+    switch (roleKey) {
+        case 'boss': return workers.filter(w => w.role === 'boss')
+        case 'manager': return workers.filter(w => w.role === 'manager')
+        case 'worker': return workers.filter(w => w.role === 'worker')
+        case 'admin': return workers.filter(w => w.role === 'admin')
+        case 'all': return workers
+        default: return workers
     }
 }
 
-function genPassword(i: number) {
-    return String(10000000 + ((i * 123456789) % 89999999))
-}
+/* ---- Build folders from real worker data ---- */
+function buildFoldersFromWorkers(workers: Worker[]): DeptFolder[] {
+    const bosses = workers.filter(w => w.role === 'boss')
+    const managers = workers.filter(w => w.role === 'manager')
+    const workerList = workers.filter(w => w.role === 'worker')
+    const admins = workers.filter(w => w.role === 'admin')
 
-const ITEMS_PER_PAGE = 10
+    const folders: DeptFolder[] = []
+
+    if (workerList.length > 0 || workers.length > 0) {
+        folders.push({
+            key: 'worker',
+            label: 'Ishchilar',
+            count: workerList.length,
+            icon: <Store size={28} />,
+            bgColor: 'bg-green-100',
+            iconColor: 'text-green-500'
+        })
+    }
+    if (managers.length > 0) {
+        folders.push({
+            key: 'manager',
+            label: 'Menejerlar',
+            count: managers.length,
+            icon: <Users size={28} />,
+            bgColor: 'bg-blue-100',
+            iconColor: 'text-blue-500'
+        })
+    }
+    if (bosses.length > 0) {
+        folders.push({
+            key: 'boss',
+            label: 'Rahbarlar',
+            count: bosses.length,
+            icon: <Users size={28} />,
+            bgColor: 'bg-purple-100',
+            iconColor: 'text-purple-500'
+        })
+    }
+    if (admins.length > 0) {
+        folders.push({
+            key: 'admin',
+            label: 'Adminlar',
+            count: admins.length,
+            icon: <Users size={28} />,
+            bgColor: 'bg-orange-100',
+            iconColor: 'text-orange-500'
+        })
+    }
+
+    // Har doim "Barchasi" folderi bo'lsin
+    folders.push({
+        key: 'all',
+        label: 'Barcha Xodimlar',
+        count: workers.length,
+        icon: <Users size={28} />,
+        bgColor: 'bg-gray-100',
+        iconColor: 'text-gray-500'
+    })
+
+    return folders
+}
 
 /* ---- Folder list view ---- */
 function FolderList({
@@ -140,16 +174,37 @@ function FolderList({
     )
 }
 
-/* ---- Employee table view ---- */
-function EmployeeTable({ employees }: { employees: Employee[] }) {
+/* ---- Worker table view (real API data) ---- */
+function WorkerTable({ workers }: { workers: Worker[] }) {
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
 
-    const filtered = employees.filter((e) =>
-        e.name.toLowerCase().includes(search.toLowerCase())
+    const filtered = workers.filter((w) =>
+        w.full_name.toLowerCase().includes(search.toLowerCase()) ||
+        w.phone.includes(search)
     )
     const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
     const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+
+    const getRoleBadge = (role: string) => {
+        const colors: Record<string, string> = {
+            boss: 'bg-purple-100 text-purple-700',
+            manager: 'bg-blue-100 text-blue-700',
+            worker: 'bg-green-100 text-green-700',
+            admin: 'bg-orange-100 text-orange-700',
+        }
+        const labels: Record<string, string> = {
+            boss: 'Rahbar',
+            manager: 'Menejer',
+            worker: 'Ishchi',
+            admin: 'Admin',
+        }
+        return (
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${colors[role] || 'bg-gray-100 text-gray-700'}`}>
+                {labels[role] || role}
+            </span>
+        )
+    }
 
     return (
         <div className="bg-white rounded-2xl p-5">
@@ -157,7 +212,7 @@ function EmployeeTable({ employees }: { employees: Employee[] }) {
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h3 className="text-[17px] font-bold text-gray-900">Barcha Hodimlar</h3>
-                    <p className="text-[12px] text-blue-500 font-medium mt-0.5">umumiy Hodimlar</p>
+                    <p className="text-[12px] text-blue-500 font-medium mt-0.5">{filtered.length} ta hodim</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative">
@@ -169,10 +224,6 @@ function EmployeeTable({ employees }: { employees: Employee[] }) {
                             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                         />
                     </div>
-                    <button className="flex items-center gap-1.5 text-[12px] border border-gray-200 rounded-lg px-3 h-8 text-gray-600 hover:bg-gray-50 transition-colors">
-                        Tanlash: Ichki Dokon
-                        <ChevronDown size={12} />
-                    </button>
                 </div>
             </div>
 
@@ -181,22 +232,46 @@ function EmployeeTable({ employees }: { employees: Employee[] }) {
                 <thead>
                     <tr className="border-b border-gray-100">
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Ism Familiyasi</th>
-                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Ish Joyi</th>
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Telefon Raqami</th>
-                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Paroli</th>
-                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Ish Soati</th>
-                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Boshqalar</th>
+                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Lavozimi</th>
+                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Holati</th>
+                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Yuz Profili</th>
+                        <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Qo'shilgan</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {paginated.map((emp, i) => (
-                        <tr key={emp.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                            <td className="py-3 px-3 text-[13px] font-semibold text-gray-800">{emp.name}</td>
-                            <td className="py-3 px-3 text-[12px] text-gray-500">{emp.location}</td>
-                            <td className="py-3 px-3 text-[12px] text-gray-500">{emp.phone}</td>
-                            <td className="py-3 px-3 text-[12px] text-gray-600 font-mono">{genPassword(i)}</td>
-                            <td className="py-3 px-3 text-[12px] text-gray-400">—</td>
-                            <td className="py-3 px-3 text-[12px] text-gray-400">—</td>
+                    {paginated.map((worker) => (
+                        <tr key={worker.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                            <td className="py-3 px-3">
+                                <div className="flex items-center gap-3">
+                                    {worker.avatar || worker.photo ? (
+                                        <img
+                                            src={worker.avatar || worker.photo}
+                                            alt={worker.full_name}
+                                            className="w-8 h-8 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[11px] font-bold">
+                                            {worker.full_name.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span className="text-[13px] font-semibold text-gray-800">{worker.full_name}</span>
+                                </div>
+                            </td>
+                            <td className="py-3 px-3 text-[12px] text-gray-500">{worker.phone}</td>
+                            <td className="py-3 px-3">{getRoleBadge(worker.role)}</td>
+                            <td className="py-3 px-3">
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${worker.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                    }`}>
+                                    {worker.is_active ? 'Faol' : 'Nofaol'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-3 text-[12px] text-gray-500">
+                                {worker.has_face_profile ? '✅ Bor' : '❌ Yo\'q'}
+                            </td>
+                            <td className="py-3 px-3 text-[12px] text-gray-400">
+                                {new Date(worker.created_at).toLocaleDateString('uz-UZ')}
+                            </td>
                         </tr>
                     ))}
                 </tbody>
@@ -209,18 +284,18 @@ function EmployeeTable({ employees }: { employees: Employee[] }) {
 
 /* ---- Main page ---- */
 
-// Folders state ni session da saqlaymiz — route o'zgarganda yo'qolmasin
-const SESSION_KEY = 'shafmet_folders'
+// Custom rollar uchun session storage
+const SESSION_KEY = 'shafmet_custom_folders'
 
-function loadFolders(): DeptFolder[] {
+function loadCustomFolders(): DeptFolder[] {
     try {
         const saved = sessionStorage.getItem(SESSION_KEY)
         if (saved) return JSON.parse(saved) as DeptFolder[]
     } catch { /* ignore */ }
-    return defaultFolders
+    return []
 }
 
-function saveFolders(folders: DeptFolder[]) {
+function saveCustomFolders(folders: DeptFolder[]) {
     try {
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(folders))
     } catch { /* ignore */ }
@@ -229,53 +304,54 @@ function saveFolders(folders: DeptFolder[]) {
 export default function EmployeesPage() {
     const { dept } = useParams<{ dept?: string }>()
     const navigate = useNavigate()
-    const [folders, setFolders] = useState<DeptFolder[]>(loadFolders)
+    const { workers, loading } = useWorkers()
+    const [customFolders, setCustomFolders] = useState<DeptFolder[]>(loadCustomFolders)
     const [showAddEmployee, setShowAddEmployee] = useState(false)
     const [showAddRole, setShowAddRole] = useState(false)
     const [editDepartment, setEditDepartment] = useState<DeptFolder | null>(null)
     const [deleteDepartment, setDeleteDepartment] = useState<DeptFolder | null>(null)
     const [accordionOpen, setAccordionOpen] = useState(false)
 
-    // Yangi rol qo'shilganda folders ga yangi card qo'shiladi va sessionStorage ga saqlanadi
+    // API dan olingan workers asosida folderlarni build qilish
+    const apiFolders = buildFoldersFromWorkers(workers)
+    const allFolders = [...apiFolders, ...customFolders]
+
+    // Yangi rol qo'shilganda
     const handleAddRole = (role: { title: string; principle: string; showInDiagram: boolean }) => {
         const key = `role_${Date.now()}`
         const updated = [
-            ...folders,
+            ...customFolders,
             { key, label: role.title, count: 0, isCustomRole: true },
         ]
-        setFolders(updated)
-        saveFolders(updated)
-        // Folder listga qaytish uchun /employees ga navigate
+        setCustomFolders(updated)
+        saveCustomFolders(updated)
         if (dept) navigate('/employees')
     }
 
     const handleEdit = (key: string) => {
-        const department = folders.find((d) => d.key === key)
-        if (department) {
-            setEditDepartment(department)
-        }
+        const department = allFolders.find((d) => d.key === key)
+        if (department) setEditDepartment(department)
     }
 
     const handleDelete = (key: string) => {
-        const department = folders.find((d) => d.key === key)
-        if (department) {
-            setDeleteDepartment(department)
-        }
+        const department = allFolders.find((d) => d.key === key)
+        if (department) setDeleteDepartment(department)
     }
 
     const handleSaveEdit = (key: string, newLabel: string) => {
-        const updated = folders.map((f) => (f.key === key ? { ...f, label: newLabel } : f))
-        setFolders(updated)
-        saveFolders(updated)
+        const updated = customFolders.map((f) => (f.key === key ? { ...f, label: newLabel } : f))
+        setCustomFolders(updated)
+        saveCustomFolders(updated)
     }
 
     const handleConfirmDelete = (key: string) => {
-        const updated = folders.filter((f) => f.key !== key)
-        setFolders(updated)
-        saveFolders(updated)
+        const updated = customFolders.filter((f) => f.key !== key)
+        setCustomFolders(updated)
+        saveCustomFolders(updated)
     }
 
-    const employees = dept ? getDeptEmployees(dept) : []
+    // Bo'lim tanlanganda — workerlarni role bo'yicha filtr qilish
+    const selectedWorkers = dept ? getWorkersByRole(workers, dept) : []
 
     return (
         <div className="space-y-4">
@@ -320,15 +396,20 @@ export default function EmployeesPage() {
             </div>
 
             {/* Content */}
-            {!dept ? (
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 className="animate-spin text-blue-500" size={32} />
+                    <span className="ml-3 text-gray-500">Yuklanmoqda...</span>
+                </div>
+            ) : !dept ? (
                 <FolderList
-                    folders={folders}
+                    folders={allFolders}
                     onSelect={(key) => navigate(`/employees/${key}`)}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                 />
             ) : (
-                <EmployeeTable employees={employees} />
+                <WorkerTable workers={selectedWorkers} />
             )}
 
             {/* Modals */}

@@ -1,28 +1,28 @@
 import { useState } from 'react'
-import { Search, Download } from 'lucide-react'
+import { Search, Download, Check, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Pagination from '@/components/ui/pagination'
-import EmployeeProfileModal from './EmployeeProfileModal'
-import type { Employee, ModalType } from '@/types/dashboard'
+import type { Attendance } from '@/types/inspection'
+import type { ModalType as DashboardModalType } from '@/types/dashboard'
 
 interface EmployeeModalProps {
   open: boolean
   onClose: () => void
-  type: ModalType
-  employees: Employee[]
+  type: DashboardModalType
+  attendances: Attendance[]
 }
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 50
 
 const modalConfig: Record<
-  NonNullable<ModalType>,
+  NonNullable<DashboardModalType>,
   { title: string; subLabel: (count: number) => string; timeColor: string; subColor: string }
 > = {
   'ichki-dokon': {
-    title: 'Ichki dokon Xodimlari',
-    subLabel: () => 'umumiy faolligar',
+    title: 'Barcha Davomatlar',
+    subLabel: (n) => `umumiy davomatlar (${n} ta)`,
     timeColor: 'bg-blue-600 text-white',
     subColor: 'text-blue-600',
   },
@@ -46,37 +46,46 @@ const modalConfig: Record<
   },
 }
 
-function efficiencyColor(val: number) {
-  if (val >= 70) return 'bg-emerald-100 text-emerald-700'
-  if (val >= 40) return 'bg-amber-100 text-amber-700'
-  return 'bg-red-100 text-red-700'
-}
-
-export default function EmployeeModal({ open, onClose, type, employees }: EmployeeModalProps) {
+export default function EmployeeModal({ open, onClose, type, attendances }: EmployeeModalProps) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
 
   if (!type) return null
   const cfg = modalConfig[type]
 
-  const filtered = employees.filter((e) =>
-    e.name.toLowerCase().includes(search.toLowerCase())
+  const filtered = attendances.filter((a) =>
+    a.user_full_name?.toLowerCase().includes(search.toLowerCase()) || 
+    a.user_phone?.includes(search)
   )
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-
-  const showBalance = type === 'ichki-dokon'
-  const showIp = type !== 'ichki-dokon'
 
   const handleSearch = (val: string) => {
     setSearch(val)
     setPage(1)
   }
 
+  const formatTime = (timeString: string) => {
+    try {
+      const date = new Date(timeString)
+      return date.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
+    } catch {
+      return timeString
+    }
+  }
+
+  const formatDate = (timeString: string) => {
+    try {
+      const date = new Date(timeString)
+      return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    } catch {
+      return timeString
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl min-w-[768px] max-h-[90vh] overflow-hidden flex flex-col p-6">
+      <DialogContent className="max-w-3xl min-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-6">
         <DialogHeader>
           <DialogTitle>{cfg.title}</DialogTitle>
           <DialogDescription className={`font-semibold text-sm ${cfg.subColor}`}>
@@ -95,7 +104,37 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
               onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1.5 text-xs h-8"
+            onClick={() => {
+              // CSV formatda eksport — Excel to'g'ri ochadi
+              const headers = ['Ism', 'Telefon', 'Sana', 'Vaqt', 'Turi', 'Yuz Tasdiqlandi', 'Joy Tasdiqlandi', 'Muvaffaqiyat']
+              const rows = filtered.map(a => [
+                a.user_full_name || `User #${a.user}`,
+                a.user_phone || '-',
+                formatDate(a.created_at),
+                formatTime(a.created_at),
+                a.attendance_type === 'in' ? 'Kirish' : 'Chiqish',
+                a.face_verified ? 'Ha' : 'Yo\'q',
+                a.location_verified ? 'Ha' : 'Yo\'q',
+                a.is_success ? 'Ha' : 'Yo\'q',
+              ])
+              const csvContent = [headers, ...rows]
+                .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+                .join('\n')
+              // BOM + UTF-8 — Excel uchun o'zbek harflarini to'g'ri ko'rsatish
+              const bom = '\uFEFF'
+              const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' })
+              const url = URL.createObjectURL(blob)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = `davomat_${cfg.title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`
+              link.click()
+              URL.revokeObjectURL(url)
+            }}
+          >
             <Download size={13} />
             Excel Yuklash
           </Button>
@@ -106,43 +145,56 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-white">
               <tr className="border-b border-gray-100">
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ism Familiyasi</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ish Joyi</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Telefon Raqami</th>
-                {showIp && <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ip Manzil</th>}
-                {showIp && <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Urunishlar</th>}
-                {showBalance && <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Balansi</th>}
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">
-                  {showBalance ? 'Faolligi' : 'Kelgan Vaqti'}
-                </th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ism</th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Telefon</th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Sana</th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Vaqt</th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Turi</th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Yuz</th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Joy</th>
+                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Muvaffaqiyat</th>
               </tr>
             </thead>
             <tbody>
-              {paginated.map((emp) => (
+              {paginated.map((a) => (
                 <tr
-                  key={emp.id}
-                  onClick={() => setSelectedEmployee(emp)}
+                  key={a.id}
                   className="border-b border-gray-50 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
                 >
-                  <td className="py-2.5 px-3 font-medium text-gray-800 text-sm">{emp.name}</td>
-                  <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.location}</td>
-                  <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.phone}</td>
-                  {showIp && <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.ip}</td>}
-                  {showIp && <td className="py-2.5 px-3 text-gray-500 text-xs">{emp.attempts} ta</td>}
-                  {showBalance && (
-                    <td className="py-2.5 px-3 text-gray-700 text-xs">
-                      {emp.balance.toLocaleString()} so'm
-                    </td>
-                  )}
+                  <td className="py-2.5 px-3 font-medium text-gray-800 text-sm">
+                    {a.user_full_name || `User #${a.user}`}
+                  </td>
+                  <td className="py-2.5 px-3 text-gray-500 text-xs">
+                    {a.user_phone || '-'}
+                  </td>
+                  <td className="py-2.5 px-3 text-gray-500 text-xs">
+                    {formatDate(a.created_at)}
+                  </td>
+                  <td className="py-2.5 px-3 text-gray-500 text-xs">
+                    {formatTime(a.created_at)}
+                  </td>
+                  <td className="py-2.5 px-3 text-gray-700 text-xs">
+                    {a.attendance_type === 'in' ? 'Kirish' : 'Chiqish'}
+                  </td>
                   <td className="py-2.5 px-3">
-                    {showBalance ? (
-                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${efficiencyColor(emp.efficiency)}`}>
-                        {emp.efficiency}%
-                      </span>
+                    {a.face_verified ? (
+                      <Check className="text-green-500" size={16} />
                     ) : (
-                      <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold ${cfg.timeColor}`}>
-                        {emp.arrivalTime}
-                      </span>
+                      <X className="text-red-500" size={16} />
+                    )}
+                  </td>
+                  <td className="py-2.5 px-3">
+                    {a.location_verified ? (
+                      <Check className="text-green-500" size={16} />
+                    ) : (
+                      <X className="text-red-500" size={16} />
+                    )}
+                  </td>
+                  <td className="py-2.5 px-3">
+                    {a.is_success ? (
+                      <Check className="text-green-500" size={16} />
+                    ) : (
+                      <X className="text-red-500" size={16} />
                     )}
                   </td>
                 </tr>
@@ -152,13 +204,6 @@ export default function EmployeeModal({ open, onClose, type, employees }: Employ
         </div>
 
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-
-        {/* Employee Profile Modal */}
-        <EmployeeProfileModal
-          open={selectedEmployee !== null}
-          onClose={() => setSelectedEmployee(null)}
-          employee={selectedEmployee}
-        />
       </DialogContent>
     </Dialog>
   )

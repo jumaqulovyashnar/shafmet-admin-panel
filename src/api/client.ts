@@ -3,10 +3,12 @@ import axios, {
     type AxiosInstance,
     type AxiosRequestConfig,
     type AxiosResponse,
+    type InternalAxiosRequestConfig,
 } from 'axios'
 import { toast } from 'sonner'
 import { getApiBaseUrl } from '@/lib/api-base-url'
 import useUserStore from '@/stores/userStore'
+import authService from '@/services/authService'
 
 export interface ApiError {
     message: string
@@ -94,6 +96,11 @@ function formatDrfErrorDetail(data: unknown): string | null {
 
 class ApiClient {
     private client: AxiosInstance
+    private isRefreshing: boolean = false
+    private failedQueue: Array<{
+        resolve: (value?: string) => void
+        reject: (reason?: unknown) => void
+    }> = []
 
     constructor() {
         const baseURL = getApiBaseUrl()
@@ -107,10 +114,21 @@ class ApiClient {
         this.setupInterceptors()
     }
 
+    private processQueue(error: unknown, token: string | null = null): void {
+        this.failedQueue.forEach((prom) => {
+            if (error) {
+                prom.reject(error)
+            } else {
+                prom.resolve(token ?? '')
+            }
+        })
+        this.failedQueue = []
+    }
+
     private setupInterceptors(): void {
         // Request interceptor — token qo'shish
         this.client.interceptors.request.use(
-            (config) => {
+            (config: InternalAxiosRequestConfig) => {
                 if (!shouldAttachAuthHeader(config.url)) {
                     if (config.headers) {
                         delete (config.headers as Record<string, unknown>).Authorization
@@ -127,10 +145,60 @@ class ApiClient {
             (error: unknown) => Promise.reject(error)
         )
 
-        // Response interceptor — xatolarni ushlab olish
+        // Response interceptor — xatolarni ushlab olish va token refresh
         this.client.interceptors.response.use(
             (response) => response,
-            (error: AxiosError<ApiError>) => {
+            async (error: AxiosError<ApiError>) => {
+                const originalRequest = error.config as InternalAxiosRequestConfig & {
+                    _retry?: boolean
+                }
+
+                if (error.response?.status === 401 && !originalRequest._retry) {
+                    const refreshToken = useUserStore.getState().userToken?.refreshToken
+
+                    if (refreshToken && !this.isRefreshing) {
+                        this.isRefreshing = true
+
+                        try {
+                            const response = await authService.refreshToken(refreshToken)
+                            const newAccessToken = response.access
+
+                            useUserStore
+                                .getState()
+                                .actions.setUserToken({
+                                    accessToken: newAccessToken,
+                                    refreshToken: response.refresh ?? refreshToken,
+                                })
+
+                            this.processQueue(null, newAccessToken)
+
+                            if (originalRequest.headers) {
+                                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+                            }
+                            originalRequest._retry = true
+                            return this.client(originalRequest)
+                        } catch (refreshError) {
+                            this.processQueue(refreshError, null)
+                            useUserStore.getState().actions.clearUserInfoAndToken()
+                            window.location.href = '/login'
+                            return Promise.reject(refreshError)
+                        } finally {
+                            this.isRefreshing = false
+                        }
+                    } else if (!this.isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            this.failedQueue.push({ resolve, reject })
+                        })
+                            .then((token) => {
+                                if (originalRequest.headers) {
+                                    originalRequest.headers.Authorization = `Bearer ${token}`
+                                }
+                                return this.client(originalRequest)
+                            })
+                            .catch((err) => Promise.reject(err))
+                    }
+                }
+
                 if (error.response) {
                     const { status, data } = error.response
                     const responseData: unknown = data
@@ -156,11 +224,6 @@ class ApiClient {
                         status,
                         success: false,
                         data: responseData,
-                    }
-
-                    if (status === 401) {
-                        useUserStore.getState().actions.clearUserInfoAndToken()
-                        window.location.href = '/login'
                     }
 
                     const msg = String(

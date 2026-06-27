@@ -5,23 +5,38 @@ import EmployeesTable from '@/components/dashboard/EmployeesTable'
 import EmployeeModal from '@/components/dashboard/EmployeeModal'
 import { images } from '@/api/constant/images'
 import type { ModalType } from '@/types/dashboard'
-import {
-    allEmployees,
-    onTimeEmployees,
-    lateEmployees,
-    absentEmployees,
-    ichkiDokonEmployees,
-} from '@/data/mockEmployees'
+import { useAttendances } from '@/hooks/useAttendances'
 
 export default function DashboardPage() {
     const [modal, setModal] = useState<ModalType>(null)
+    const { attendances, loading, totalCount, page, totalPages, setPage, search, setSearch, filter, setFilter } = useAttendances(100)
+
+    // Calculate statistics from real attendance data
+    const safeAttendances = attendances || []
+    const onTimeCount = safeAttendances.filter(a => a.is_success && a.face_verified && a.location_verified).length
+    const lateCount = safeAttendances.filter(a => a.is_success && (!a.face_verified || !a.location_verified)).length
+    const absentCount = totalCount > 0 ? totalCount - onTimeCount - lateCount : 0
+
+    // Calculate percentages for charts
+    const faceVerifiedRate = totalCount > 0 
+        ? Math.round((safeAttendances.filter(a => a.face_verified).length / totalCount) * 100) 
+        : 0
+    const locationVerifiedRate = totalCount > 0 
+        ? Math.round((safeAttendances.filter(a => a.location_verified).length / totalCount) * 100) 
+        : 0
+    const successRate = totalCount > 0 
+        ? Math.round((safeAttendances.filter(a => a.is_success).length / totalCount) * 100) 
+        : 0
+    const checkInRate = totalCount > 0 
+        ? Math.round((safeAttendances.filter(a => a.attendance_type === 'in').length / totalCount) * 100) 
+        : 0
 
     const modalEmployees = () => {
         switch (modal) {
-            case 'ichki-dokon': return ichkiDokonEmployees
-            case 'kelganlar': return onTimeEmployees
-            case 'kechikkanlar': return lateEmployees
-            case 'kelmaganlar': return absentEmployees
+            case 'ichki-dokon': return safeAttendances
+            case 'kelganlar': return safeAttendances.filter(a => a.is_success && a.face_verified && a.location_verified)
+            case 'kechikkanlar': return safeAttendances.filter(a => a.is_success && (!a.face_verified || !a.location_verified))
+            case 'kelmaganlar': return safeAttendances.filter(a => !a.is_success)
             default: return []
         }
     }
@@ -40,7 +55,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga Kelganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{onTimeEmployees.length}</p>
+                        <p className="text-2xl font-bold text-gray-900">{onTimeCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-emerald-600">
                             <TrendingUp size={11} />
                             <span>18% o'tgan oyga nbt</span>
@@ -58,7 +73,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga kechikganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{lateEmployees.length}</p>
+                        <p className="text-2xl font-bold text-gray-900">{lateCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-red-500">
                             <TrendingDown size={11} />
                             <span>1% o'tgan oyga nbt</span>
@@ -76,7 +91,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Kelmaganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{absentEmployees.length}</p>
+                        <p className="text-2xl font-bold text-gray-900">{absentCount}</p>
                     </div>
                 </div>
             </div>
@@ -84,41 +99,51 @@ export default function DashboardPage() {
             {/* Store cards row */}
             <div className="grid grid-cols-4 gap-5">
                 <StoreCard
-                    title="Ichki Do'kon"
-                    subtitle="Ichki do'kon statistikasi umumiy"
-                    percentage={65}
+                    title="Yuz Tasdiqlash"
+                    subtitle="Yuz tanish bo'yicha foiz"
+                    percentage={faceVerifiedRate}
                     color="#f97316"
                     onClick={() => setModal('ichki-dokon')}
                 />
                 <StoreCard
-                    title="Tashqi Do'kon"
-                    subtitle="Tashqi do'kon statistikasi Umumiy"
-                    percentage={65}
+                    title="Joy Tasdiqlash"
+                    subtitle="GPS joylashuv bo'yicha foiz"
+                    percentage={locationVerifiedRate}
                     color="#22c55e"
                 />
                 <StoreCard
-                    title="Personallar"
-                    subtitle="Personallar Statistikasi"
-                    percentage={65}
+                    title="Muvaffaqiyat"
+                    subtitle="Umumiy muvaffaqiyat foizi"
+                    percentage={successRate}
                     color="#a855f7"
                 />
                 <StoreCard
-                    title="Buxgalterlar"
-                    subtitle="Buxgalterlar Statistikasi"
-                    percentage={65}
+                    title="Kirish"
+                    subtitle="Check-in bo'yicha foiz"
+                    percentage={checkInRate}
                     color="#3b82f6"
                 />
             </div>
 
             {/* Employees table */}
-            <EmployeesTable employees={allEmployees} />
+            <EmployeesTable 
+                attendances={safeAttendances} 
+                loading={loading} 
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                search={search}
+                onSearchChange={setSearch}
+                filter={filter}
+                onFilterChange={setFilter}
+            />
 
             {/* Modals */}
             <EmployeeModal
                 open={modal !== null}
                 onClose={() => setModal(null)}
                 type={modal}
-                employees={modalEmployees()}
+                attendances={modalEmployees()}
             />
         </div>
     )
