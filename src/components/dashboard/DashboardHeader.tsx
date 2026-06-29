@@ -4,9 +4,14 @@ import { useLocation, Link } from 'react-router-dom'
 interface Crumb { label: string; href?: string }
 
 const deptLabels: Record<string, string> = {
+    all: 'Hammasi',
     ichki: 'Ichki dokon ishchilari',
     tashqi: 'Tashqi dokon ishchilari',
     personallar: 'Personallar',
+    boss: 'Bosslar',
+    manager: 'Menejerlar',
+    worker: 'Ishchilar',
+    admin: 'Adminlar',
 }
 
 function getBreadcrumbs(pathname: string): Crumb[] {
@@ -14,6 +19,7 @@ function getBreadcrumbs(pathname: string): Crumb[] {
     if (pathname === '/tasks') return [{ label: 'Topshiriqlar' }]
     if (pathname === '/payments') return [{ label: 'Tolovlar' }]
     if (pathname === '/geo') return [{ label: 'Geolokatsiya' }]
+    if (pathname === '/schedules') return [{ label: 'Ish Jadvali' }]
     if (pathname === '/departments') return [{ label: "Maxsus Bo'lim" }]
 
     if (pathname === '/employees') return [{ label: "Ishchi Qo'shish" }]

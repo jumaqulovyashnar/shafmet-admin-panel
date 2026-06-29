@@ -7,6 +7,8 @@ import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import AddRoleModal from '@/components/employees/AddRoleModal'
 import EditDepartmentModal from '@/components/employees/EditDepartmentModal'
 import DeleteDepartmentModal from '@/components/employees/DeleteDepartmentModal'
+import EmployeeProfileModal from '@/components/dashboard/EmployeeProfileModal'
+import { getAbsoluteImageUrl } from '@/lib/api-base-url'
 import { useWorkers } from '@/hooks/useWorkers'
 import type { Worker } from '@/types/inspection'
 
@@ -36,67 +38,27 @@ const folderBgColors = [
 
 const ITEMS_PER_PAGE = 10
 
-/* ---- Role filtering helper ---- */
-function getWorkersByRole(workers: Worker[], roleKey: string): Worker[] {
-    switch (roleKey) {
-        case 'boss': return workers.filter(w => w.role === 'boss')
-        case 'manager': return workers.filter(w => w.role === 'manager')
-        case 'worker': return workers.filter(w => w.role === 'worker')
-        case 'admin': return workers.filter(w => w.role === 'admin')
-        case 'all': return workers
-        default: return workers
-    }
-}
+import { useLavozimlar, type Lavozim } from '@/hooks/useLavozimlar'
 
-/* ---- Build folders from real worker data ---- */
-function buildFoldersFromWorkers(workers: Worker[]): DeptFolder[] {
-    const bosses = workers.filter(w => w.role === 'boss')
-    const managers = workers.filter(w => w.role === 'manager')
-    const workerList = workers.filter(w => w.role === 'worker')
-    const admins = workers.filter(w => w.role === 'admin')
+/* ---- Build folders from Lavozimlar data ---- */
+function buildFoldersFromLavozimlar(lavozimlar: Lavozim[], workers: Worker[]): DeptFolder[] {
+    const folders: DeptFolder[] = lavozimlar.map((lavozim, idx) => {
+        // Find workers for this branch/department
+        const count = workers.filter(w => 
+            w.branch === lavozim.slug || 
+            w.department_detail?.slug === lavozim.slug ||
+            w.department_detail?.id === lavozim.id
+        ).length
 
-    const folders: DeptFolder[] = []
-
-    if (workerList.length > 0 || workers.length > 0) {
-        folders.push({
-            key: 'worker',
-            label: 'Ishchilar',
-            count: workerList.length,
+        return {
+            key: lavozim.slug,
+            label: lavozim.name,
+            count: count,
             icon: <Store size={28} />,
-            bgColor: 'bg-green-100',
-            iconColor: 'text-green-500'
-        })
-    }
-    if (managers.length > 0) {
-        folders.push({
-            key: 'manager',
-            label: 'Menejerlar',
-            count: managers.length,
-            icon: <Users size={28} />,
-            bgColor: 'bg-blue-100',
-            iconColor: 'text-blue-500'
-        })
-    }
-    if (bosses.length > 0) {
-        folders.push({
-            key: 'boss',
-            label: 'Rahbarlar',
-            count: bosses.length,
-            icon: <Users size={28} />,
-            bgColor: 'bg-purple-100',
-            iconColor: 'text-purple-500'
-        })
-    }
-    if (admins.length > 0) {
-        folders.push({
-            key: 'admin',
-            label: 'Adminlar',
-            count: admins.length,
-            icon: <Users size={28} />,
-            bgColor: 'bg-orange-100',
-            iconColor: 'text-orange-500'
-        })
-    }
+            bgColor: folderBgColors[idx % folderBgColors.length],
+            iconColor: folderColors[idx % folderColors.length]
+        }
+    })
 
     // Har doim "Barchasi" folderi bo'lsin
     folders.push({
@@ -175,7 +137,7 @@ function FolderList({
 }
 
 /* ---- Worker table view (real API data) ---- */
-function WorkerTable({ workers }: { workers: Worker[] }) {
+function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerClick?: (id: number) => void }) {
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
 
@@ -241,12 +203,16 @@ function WorkerTable({ workers }: { workers: Worker[] }) {
                 </thead>
                 <tbody>
                     {paginated.map((worker) => (
-                        <tr key={worker.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                        <tr
+                            key={worker.id}
+                            onClick={() => onWorkerClick?.(worker.id)}
+                            className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
                             <td className="py-3 px-3">
                                 <div className="flex items-center gap-3">
-                                    {worker.avatar || worker.photo ? (
+                                    {worker.photo_url || worker.photo || worker.avatar ? (
                                         <img
-                                            src={worker.avatar || worker.photo}
+                                            src={getAbsoluteImageUrl(worker.photo_url || worker.photo || worker.avatar)}
                                             alt={worker.full_name}
                                             className="w-8 h-8 rounded-full object-cover"
                                         />
@@ -259,7 +225,16 @@ function WorkerTable({ workers }: { workers: Worker[] }) {
                                 </div>
                             </td>
                             <td className="py-3 px-3 text-[12px] text-gray-500">{worker.phone}</td>
-                            <td className="py-3 px-3">{getRoleBadge(worker.role)}</td>
+                            <td className="py-3 px-3">
+                                <div className="flex flex-col items-start gap-1.5">
+                                    {(worker.department_detail?.name || worker.branch) && (
+                                        <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                                            {worker.department_detail?.name || worker.branch}
+                                        </span>
+                                    )}
+                                    {worker.role && getRoleBadge(worker.role)}
+                                </div>
+                            </td>
                             <td className="py-3 px-3">
                                 <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${worker.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                     }`}>
@@ -304,7 +279,10 @@ function saveCustomFolders(folders: DeptFolder[]) {
 export default function EmployeesPage() {
     const { dept } = useParams<{ dept?: string }>()
     const navigate = useNavigate()
-    const { workers, loading } = useWorkers()
+    const { workers, loading, refetch } = useWorkers()
+    const { lavozimlar, loading: lavozimLoading } = useLavozimlar()
+    const isPageLoading = loading || lavozimLoading
+    const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null)
     const [customFolders, setCustomFolders] = useState<DeptFolder[]>(loadCustomFolders)
     const [showAddEmployee, setShowAddEmployee] = useState(false)
     const [showAddRole, setShowAddRole] = useState(false)
@@ -313,10 +291,10 @@ export default function EmployeesPage() {
     const [accordionOpen, setAccordionOpen] = useState(false)
 
     // API dan olingan workers asosida folderlarni build qilish
-    const apiFolders = buildFoldersFromWorkers(workers)
+    const apiFolders = buildFoldersFromLavozimlar(lavozimlar, workers)
     const allFolders = [...apiFolders, ...customFolders]
 
-    // Yangi rol qo'shilganda
+    // Yangi lavozim qo'shilganda
     const handleAddRole = (role: { title: string; principle: string; showInDiagram: boolean }) => {
         const key = `role_${Date.now()}`
         const updated = [
@@ -350,8 +328,16 @@ export default function EmployeesPage() {
         saveCustomFolders(updated)
     }
 
-    // Bo'lim tanlanganda — workerlarni role bo'yicha filtr qilish
-    const selectedWorkers = dept ? getWorkersByRole(workers, dept) : []
+    // Bo'lim tanlanganda — workerlarni lavozim (dept slug) bo'yicha filtr qilish
+    const selectedWorkers = dept === 'all' 
+        ? workers 
+        : dept 
+            ? workers.filter(w => 
+                w.branch === dept || 
+                w.department_detail?.slug === dept || 
+                w.department_detail?.id.toString() === dept
+              ) 
+            : []
 
     return (
         <div className="space-y-4">
@@ -375,15 +361,15 @@ export default function EmployeesPage() {
                                     onClick={() => { setShowAddEmployee(true); setAccordionOpen(false) }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-700 hover:bg-blue-50 rounded-lg transition-colors font-medium mb-1"
                                 >
-                                    <UserPlus size={14} className="text-blue-600" />
-                                    <span>Yangi hodim</span>
+                                    <UserPlus size={16} className="text-blue-600" />
+                                    <span>Yangi xodim</span>
                                 </button>
                                 <button
                                     onClick={() => { setShowAddRole(true); setAccordionOpen(false) }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-700 hover:bg-blue-50 rounded-lg transition-colors font-medium"
                                 >
-                                    <ShieldPlus size={14} className="text-blue-600" />
-                                    <span>Yangi rol</span>
+                                    <ShieldPlus size={16} className="text-blue-600" />
+                                    <span>Lavozim yaratish</span>
                                 </button>
                             </div>
                         )}
@@ -396,7 +382,7 @@ export default function EmployeesPage() {
             </div>
 
             {/* Content */}
-            {loading ? (
+            {isPageLoading ? (
                 <div className="flex items-center justify-center py-20">
                     <Loader2 className="animate-spin text-blue-500" size={32} />
                     <span className="ml-3 text-gray-500">Yuklanmoqda...</span>
@@ -409,13 +395,14 @@ export default function EmployeesPage() {
                     onDelete={handleDelete}
                 />
             ) : (
-                <WorkerTable workers={selectedWorkers} />
+                <WorkerTable workers={selectedWorkers} onWorkerClick={setSelectedWorkerId} />
             )}
 
             {/* Modals */}
             <AddEmployeeModal
                 open={showAddEmployee}
-                onClose={() => setShowAddEmployee(false)}
+                onClose={() => { setShowAddEmployee(false); refetch() }}
+                defaultLocation={dept ? allFolders.find(f => f.key === dept)?.label : undefined}
             />
             <AddRoleModal
                 open={showAddRole}
@@ -433,6 +420,14 @@ export default function EmployeesPage() {
                 onClose={() => setDeleteDepartment(null)}
                 department={deleteDepartment}
                 onConfirm={handleConfirmDelete}
+            />
+
+            {/* Employee Profile Modal */}
+            <EmployeeProfileModal
+                open={selectedWorkerId !== null}
+                onClose={() => setSelectedWorkerId(null)}
+                workerId={selectedWorkerId}
+                onUpdate={refetch}
             />
         </div>
     )

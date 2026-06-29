@@ -117,7 +117,16 @@ export default function TasksEmployeeModal({ open, onClose, title, workers }: Ta
                                             </div>
                                         </td>
                                         <td className="py-2.5 px-3 text-gray-500 text-xs">{worker.phone}</td>
-                                        <td className="py-2.5 px-3">{getRoleBadge(worker.role)}</td>
+                                        <td className="py-2.5 px-3">
+                                            <div className="flex flex-col items-start gap-1">
+                                                {(worker.department_detail?.name || worker.branch) && (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                                                        {worker.department_detail?.name || worker.branch}
+                                                    </span>
+                                                )}
+                                                {worker.role && getRoleBadge(worker.role)}
+                                            </div>
+                                        </td>
                                         <td className="py-2.5 px-3">
                                             <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${worker.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                 {worker.is_active ? 'Faol' : 'Nofaol'}
@@ -153,7 +162,7 @@ export default function TasksEmployeeModal({ open, onClose, title, workers }: Ta
             <TaskAssignModal
                 open={!!assignTarget}
                 onClose={() => setAssignTarget(null)}
-                employeeName={assignTarget?.full_name}
+                worker={assignTarget}
             />
 
             {/* Hodimdan vazifa olish */}
@@ -167,7 +176,7 @@ export default function TasksEmployeeModal({ open, onClose, title, workers }: Ta
             <TaskAssignModal
                 open={showUmumiy}
                 onClose={() => setShowUmumiy(false)}
-                employeeName={undefined}
+                worker={null}
             />
         </>
     )

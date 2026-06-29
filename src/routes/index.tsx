@@ -3,6 +3,8 @@ import LoginPage from '@/pages/loginPage'
 import DashboardPage from '@/pages/DashboardPage'
 import TasksPage from '@/pages/TasksPage'
 import EmployeesPage from '@/pages/EmployeesPage'
+import GeoPage from '@/pages/GeoPage'
+import SchedulesPage from '@/pages/SchedulesPage'
 import DashboardLayout from '@/layout/DashboardLayout'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
@@ -22,7 +24,8 @@ export const router = createBrowserRouter([
       { path: 'employees', element: <EmployeesPage /> },
       { path: 'employees/:dept', element: <EmployeesPage /> },
       { path: 'payments', element: <div className="bg-white rounded-2xl p-8 text-gray-400 text-sm">Tolovlar — tez kunda</div> },
-      { path: 'geo', element: <div className="bg-white rounded-2xl p-8 text-gray-400 text-sm">Geolokatsiya — tez kunda</div> },
+      { path: 'geo', element: <GeoPage /> },
+      { path: 'schedules', element: <SchedulesPage /> },
       { path: 'departments', element: <div className="bg-white rounded-2xl p-8 text-gray-400 text-sm">Maxsus Bo'lim — tez kunda</div> },
     ],
   },

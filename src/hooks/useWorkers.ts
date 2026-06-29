@@ -20,8 +20,6 @@ export function useWorkers(): UseWorkersReturn {
     try {
       const response = await inspectionService.getWorkers()
 
-      console.log('[useWorkers] API response:', response)
-
       if (Array.isArray(response)) {
         setWorkers(response)
       } else {

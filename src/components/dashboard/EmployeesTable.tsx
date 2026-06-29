@@ -3,10 +3,11 @@ import { Search, ChevronDown, Check, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import Pagination from '@/components/ui/pagination'
-import type { Attendance } from '@/types/inspection'
+import type { V1Attendance } from '@/types/inspection'
+import { getAbsoluteImageUrl } from '@/lib/api-base-url'
 
 interface EmployeesTableProps {
-    attendances: Attendance[]
+    attendances: V1Attendance[]
     loading?: boolean
     page?: number
     totalPages?: number
@@ -15,9 +16,12 @@ interface EmployeesTableProps {
     onSearchChange?: (search: string) => void
     filter?: string
     onFilterChange?: (filter: string) => void
+    onWorkerClick?: (workerId: number) => void
 }
 
-const FILTERS = ['Barchasi', 'Yuz Tasdiqlangan', 'Joy Tasdiqlangan', 'Muvaffaqiyatli']
+const FILTERS = ['Barchasi', 'Ichki Do\'kon', 'Tashqi Do\'kon', 'Personallar', 'Buxgalterlar']
+
+
 
 export default function EmployeesTable({ 
     attendances, 
@@ -28,7 +32,8 @@ export default function EmployeesTable({
     search = '',
     onSearchChange,
     filter = 'Barchasi',
-    onFilterChange 
+    onFilterChange,
+    onWorkerClick
 }: EmployeesTableProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
@@ -104,73 +109,142 @@ export default function EmployeesTable({
 
             {/* Table */}
             <div className="overflow-x-auto mt-4">
-                <table className="w-full text-sm">
+                <table className="w-full table-fixed text-sm">
                     <thead>
-                        <tr className="border-b border-gray-100">
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Ism</th>
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Telefon</th>
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Sana</th>
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Vaqt</th>
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Turi</th>
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Yuz</th>
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Joy</th>
-                            <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Muvaffaqiyat</th>
+                        <tr className="border-b border-gray-100 h-12">
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Rasm</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Ism</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Sana</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Kelgan vaqt</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Turi</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Status</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Ketgan vaqt</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Turi</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Status</th>
+                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Umumiy soat</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading
                             ? Array.from({ length: 5 }).map((_, i) => (
-                                <tr key={i} className="border-b border-gray-50">
-                                    {Array.from({ length: 8 }).map((_, j) => (
-                                        <td key={j} className="py-3 px-3">
-                                            <Skeleton className="h-4 w-24" />
+                                <tr key={i} className="border-b border-gray-50 h-12">
+                                    {Array.from({ length: 10 }).map((_, j) => (
+                                        <td key={j} className="py-2 px-2 text-center align-middle">
+                                            <Skeleton className="h-4 w-16 mx-auto" />
                                         </td>
                                     ))}
                                 </tr>
                             ))
-                            : paginatedAttendances.map((a) => (
-                                <tr
-                                    key={a.id}
-                                    className="border-b border-gray-50 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
-                                >
-                                    <td className="py-3 px-3 font-medium text-gray-800 text-sm">
-                                        {a.user_full_name || `User #${a.user}`}
-                                    </td>
-                                    <td className="py-3 px-3 text-gray-500 text-xs">
-                                        {a.user_phone || '-'}
-                                    </td>
-                                    <td className="py-3 px-3 text-gray-500 text-xs">
-                                        {formatDate(a.created_at)}
-                                    </td>
-                                    <td className="py-3 px-3 text-gray-500 text-xs">
-                                        {formatTime(a.created_at)}
-                                    </td>
-                                    <td className="py-3 px-3 text-gray-700 text-xs">
-                                        {a.attendance_type === 'in' ? 'Kirish' : 'Chiqish'}
-                                    </td>
-                                    <td className="py-3 px-3">
-                                        {a.face_verified ? (
-                                            <Check className="text-green-500" size={16} />
-                                        ) : (
-                                            <X className="text-red-500" size={16} />
-                                        )}
-                                    </td>
-                                    <td className="py-3 px-3">
-                                        {a.location_verified ? (
-                                            <Check className="text-green-500" size={16} />
-                                        ) : (
-                                            <X className="text-red-500" size={16} />
-                                        )}
-                                    </td>
-                                    <td className="py-3 px-3">
-                                        {a.is_success ? (
-                                            <Check className="text-green-500" size={16} />
-                                        ) : (
-                                            <X className="text-red-500" size={16} />
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                            : paginatedAttendances.map((a, idx) => {
+                                const avatarUrl = getAbsoluteImageUrl(a.rasm)
+
+                                return (
+                                    <tr
+                                        key={a.id || idx}
+                                        onClick={() => a.user && onWorkerClick?.(a.user)}
+                                        className="border-b border-gray-50 h-12 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
+                                    >
+                                        <td className="py-1.5 px-2 text-center align-middle">
+                                            <div className="flex justify-center items-center">
+                                                {avatarUrl ? (
+                                                    <img
+                                                        src={avatarUrl}
+                                                        alt={a.ism}
+                                                        className="w-7 h-7 rounded-full object-cover border border-gray-100"
+                                                    />
+                                                ) : (
+                                                    <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-[10px]">
+                                                        {(a.ism || 'U').charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="py-1.5 px-2 text-center align-middle">
+                                            <span className="font-semibold text-gray-800 text-[12px] truncate block max-w-[90px] mx-auto" title={a.ism || `User #${a.user}`}>
+                                                {a.ism || `User #${a.user}`}
+                                            </span>
+                                        </td>
+                                        <td className="py-1.5 px-2 text-gray-500 text-[11px] text-center align-middle">
+                                            {formatDate(a.sana)}
+                                        </td>
+                                        <td className="py-1.5 px-2 text-gray-500 text-[11px] text-center align-middle">
+                                            {a.kelgan_vaqt ? formatTime(a.kelgan_vaqt) : '-'}
+                                        </td>
+                                        <td className="py-1.5 px-2 text-[11px] text-center align-middle">
+                                            <div className="flex justify-center items-center">
+                                                {a.turi_kirish ? (
+                                                    a.turi_kirish.toLowerCase() === 'kechikkan' ? (
+                                                        <span className="px-1.5 py-0.5 rounded-full font-medium bg-orange-50 text-orange-700 border border-orange-100 text-[10px]">
+                                                            Kechikkan
+                                                        </span>
+                                                    ) : a.turi_kirish.toLowerCase() === 'kelmagan' ? (
+                                                        <span className="px-1.5 py-0.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-100 text-[10px]">
+                                                            Kelmagan
+                                                        </span>
+                                                    ) : (
+                                                        <span className="px-1.5 py-0.5 rounded-full font-medium bg-green-50 text-green-700 border border-green-100 text-[10px]">
+                                                            Kelgan
+                                                        </span>
+                                                    )
+                                                ) : (
+                                                    <span className="text-gray-400">-</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="py-1.5 px-2 text-center align-middle">
+                                            <div className="flex justify-center items-center">
+                                                {a.kelgan_vaqt ? (
+                                                    a.status_kirish ? (
+                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
+                                                            <Check size={12} className="stroke-[3]" />
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
+                                                            <X size={12} className="stroke-[3]" />
+                                                        </span>
+                                                    )
+                                                ) : (
+                                                    <span className="text-gray-400">-</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="py-1.5 px-2 text-gray-500 text-[11px] text-center align-middle">
+                                            {a.ketgan_vaqt ? formatTime(a.ketgan_vaqt) : '-'}
+                                        </td>
+                                        <td className="py-1.5 px-2 text-[11px] text-center align-middle">
+                                            <div className="flex justify-center items-center">
+                                                {a.turi_chiqish ? (
+                                                    <span className="px-1.5 py-0.5 rounded-full font-medium bg-gray-50 text-gray-600 border border-gray-100 text-[10px]">
+                                                        {a.turi_chiqish}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-400">-</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="py-1.5 px-2 text-center align-middle">
+                                            <div className="flex justify-center items-center">
+                                                {a.ketgan_vaqt ? (
+                                                    a.status_chiqish ? (
+                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
+                                                            <Check size={12} className="stroke-[3]" />
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
+                                                            <X size={12} className="stroke-[3]" />
+                                                        </span>
+                                                    )
+                                                ) : (
+                                                    <span className="text-gray-400">-</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="py-1.5 px-2 text-[11px] text-gray-700 font-semibold text-center align-middle">
+                                            {a.umumiy_soat || '-'}
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                     </tbody>
                 </table>
             </div>

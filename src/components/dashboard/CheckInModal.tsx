@@ -69,7 +69,7 @@ export default function CheckInModal({ open, onClose, onSuccess }: CheckInModalP
       photo,
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      attendance_type: attendanceType,
+      attendance_type: attendanceType === 'in' ? 'In' : 'Out',
     }
 
     setLoading(true)

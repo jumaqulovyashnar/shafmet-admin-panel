@@ -1,17 +1,22 @@
-import { useState } from 'react'
-import { Search, Download, Check, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Search, Download, Check, X, Loader2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Pagination from '@/components/ui/pagination'
-import type { Attendance } from '@/types/inspection'
+import { useWorkers } from '@/hooks/useWorkers'
+import type { V1Attendance } from '@/types/inspection'
 import type { ModalType as DashboardModalType } from '@/types/dashboard'
+import { toast } from 'sonner'
+import { inspectionService } from '@/services/inspectionService'
+import { getApiBaseUrl, getAbsoluteImageUrl } from '@/lib/api-base-url'
+import { API_ENDPOINTS } from '@/api/constant/endpoints'
 
 interface EmployeeModalProps {
   open: boolean
   onClose: () => void
   type: DashboardModalType
-  attendances: Attendance[]
+  attendances: V1Attendance[] // Fallback if API fails
 }
 
 const ITEMS_PER_PAGE = 50
@@ -21,16 +26,34 @@ const modalConfig: Record<
   { title: string; subLabel: (count: number) => string; timeColor: string; subColor: string }
 > = {
   'ichki-dokon': {
-    title: 'Barcha Davomatlar',
-    subLabel: (n) => `umumiy davomatlar (${n} ta)`,
+    title: "Ichki Do'kon Davomati",
+    subLabel: (n) => `Ichki do'kondagilar davomati (${n} ta)`,
+    timeColor: 'bg-orange-500 text-white',
+    subColor: 'text-orange-500',
+  },
+  'tashqi-dokon': {
+    title: "Tashqi Do'kon Davomati",
+    subLabel: (n) => `Tashqi do'kondagilar davomati (${n} ta)`,
+    timeColor: 'bg-green-600 text-white',
+    subColor: 'text-green-600',
+  },
+  personallar: {
+    title: 'Personallar Davomati',
+    subLabel: (n) => `Personallar davomati (${n} ta)`,
+    timeColor: 'bg-purple-600 text-white',
+    subColor: 'text-purple-600',
+  },
+  buxgalterlar: {
+    title: 'Buxgalterlar Davomati',
+    subLabel: (n) => `Buxgalterlar davomati (${n} ta)`,
     timeColor: 'bg-blue-600 text-white',
     subColor: 'text-blue-600',
   },
   kelganlar: {
     title: 'Ishga Kelganlar',
     subLabel: (n) => `Vaqtida Kelganlar ${n}`,
-    timeColor: 'bg-blue-600 text-white',
-    subColor: 'text-blue-600',
+    timeColor: 'bg-emerald-600 text-white',
+    subColor: 'text-emerald-600',
   },
   kechikkanlar: {
     title: 'Ishga Kechikib Kelganlar',
@@ -49,20 +72,119 @@ const modalConfig: Record<
 export default function EmployeeModal({ open, onClose, type, attendances }: EmployeeModalProps) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [apiAttendances, setApiAttendances] = useState<any[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  const { workers } = useWorkers()
+  const workerMap = new Map(workers.map((w) => [String(w.id), w]))
+
+  useEffect(() => {
+    if (!open || !type) return
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        let res: any
+        let branch: string | undefined
+        if (type === 'ichki-dokon') branch = 'Ichki dokon'
+        else if (type === 'tashqi-dokon') branch = 'Tashqi dokon'
+        else if (type === 'personallar') branch = 'Personallar'
+        else if (type === 'buxgalterlar') branch = 'Buxgalter'
+
+        if (type === 'kelganlar') {
+          res = await inspectionService.getPresentAttendances({ page, page_size: ITEMS_PER_PAGE, search })
+        } else if (type === 'kechikkanlar') {
+          res = await inspectionService.getLateAttendances({ page, page_size: ITEMS_PER_PAGE, search })
+        } else if (type === 'kelmaganlar') {
+          res = await inspectionService.getAbsentAttendances({ branch, search })
+        } else {
+          res = await inspectionService.getAllListAttendances({ branch, page, page_size: ITEMS_PER_PAGE, search })
+        }
+
+        if (res && res.results && Array.isArray(res.results)) {
+          const list = res.results
+          if (list.length > 0) {
+            setApiAttendances(list)
+            setTotalCount(res.count || list.length)
+          } else {
+            // Fallback to client-side calculations if API returned 0 results
+            setApiAttendances(attendances)
+            setTotalCount(attendances.length)
+          }
+        } else if (Array.isArray(res)) {
+          if (res.length > 0) {
+            setApiAttendances(res)
+            setTotalCount(res.length)
+          } else {
+            setApiAttendances(attendances)
+            setTotalCount(attendances.length)
+          }
+        } else {
+          setApiAttendances(attendances)
+          setTotalCount(attendances.length)
+        }
+      } catch (err) {
+        console.error("EmployeeModal fetch error:", err)
+        // Fallback to prop
+        setApiAttendances(attendances)
+        setTotalCount(attendances.length)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [open, type, page, search, attendances])
 
   if (!type) return null
   const cfg = modalConfig[type]
 
-  const filtered = attendances.filter((a) =>
-    a.user_full_name?.toLowerCase().includes(search.toLowerCase()) || 
-    a.user_phone?.includes(search)
-  )
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
-  const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE))
+  const paginated = apiAttendances as V1Attendance[]
 
   const handleSearch = (val: string) => {
     setSearch(val)
     setPage(1)
+  }
+
+  const handleExcelExport = async () => {
+    const exportId = toast.loading("Excel fayli tayyorlanmoqda...")
+    try {
+      let status: 'all' | 'present' | 'late' | 'absent' = 'all'
+      if (type === 'kelganlar') status = 'present'
+      else if (type === 'kechikkanlar') status = 'late'
+      else if (type === 'kelmaganlar') status = 'absent'
+
+      let branch: string | undefined
+      if (type === 'ichki-dokon') branch = 'Ichki dokon'
+      if (type === 'tashqi-dokon') branch = 'Tashqi dokon'
+      if (type === 'personallar') branch = 'Personallar'
+      if (type === 'buxgalterlar') branch = 'Buxgalter'
+
+      const res: any = await inspectionService.exportAttendances({
+        branch,
+        search: search || undefined,
+        status,
+      })
+
+      toast.dismiss(exportId)
+      if (res && res.download_link) {
+        window.open(res.download_link, '_blank')
+        toast.success("Excel muvaffaqiyatli yuklab olindi!")
+      } else {
+        const queryParams = new URLSearchParams()
+        if (branch) queryParams.append('branch', branch)
+        if (search) queryParams.append('search', search)
+        if (status) queryParams.append('status', status)
+        
+        const exportUrl = `${getApiBaseUrl()}${API_ENDPOINTS.EXPORT_ATTENDANCES}?${queryParams.toString()}`
+        window.open(exportUrl, '_blank')
+        toast.success("Excel yuklab olish boshlandi")
+      }
+    } catch (err) {
+      toast.dismiss(exportId)
+      toast.error("Excel yuklab olishda xatolik yuz berdi")
+      console.error(err)
+    }
   }
 
   const formatTime = (timeString: string) => {
@@ -85,11 +207,11 @@ export default function EmployeeModal({ open, onClose, type, attendances }: Empl
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl min-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-6">
+      <DialogContent className="max-w-[1020px] min-w-[1020px] max-h-[90vh] overflow-hidden flex flex-col p-6">
         <DialogHeader>
           <DialogTitle>{cfg.title}</DialogTitle>
           <DialogDescription className={`font-semibold text-sm ${cfg.subColor}`}>
-            {cfg.subLabel(filtered.length)}
+            {cfg.subLabel(totalCount)}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,33 +229,8 @@ export default function EmployeeModal({ open, onClose, type, attendances }: Empl
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1.5 text-xs h-8"
-            onClick={() => {
-              // CSV formatda eksport — Excel to'g'ri ochadi
-              const headers = ['Ism', 'Telefon', 'Sana', 'Vaqt', 'Turi', 'Yuz Tasdiqlandi', 'Joy Tasdiqlandi', 'Muvaffaqiyat']
-              const rows = filtered.map(a => [
-                a.user_full_name || `User #${a.user}`,
-                a.user_phone || '-',
-                formatDate(a.created_at),
-                formatTime(a.created_at),
-                a.attendance_type === 'in' ? 'Kirish' : 'Chiqish',
-                a.face_verified ? 'Ha' : 'Yo\'q',
-                a.location_verified ? 'Ha' : 'Yo\'q',
-                a.is_success ? 'Ha' : 'Yo\'q',
-              ])
-              const csvContent = [headers, ...rows]
-                .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-                .join('\n')
-              // BOM + UTF-8 — Excel uchun o'zbek harflarini to'g'ri ko'rsatish
-              const bom = '\uFEFF'
-              const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' })
-              const url = URL.createObjectURL(blob)
-              const link = document.createElement('a')
-              link.href = url
-              link.download = `davomat_${cfg.title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`
-              link.click()
-              URL.revokeObjectURL(url)
-            }}
+            className="gap-1.5 text-xs h-8 cursor-pointer"
+            onClick={handleExcelExport}
           >
             <Download size={13} />
             Excel Yuklash
@@ -142,63 +239,155 @@ export default function EmployeeModal({ open, onClose, type, attendances }: Empl
 
         {/* Table */}
         <div className="overflow-y-auto flex-1 min-h-0">
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed text-sm">
             <thead className="sticky top-0 bg-white">
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Ism</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Telefon</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Sana</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Vaqt</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Turi</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Yuz</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Joy</th>
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Muvaffaqiyat</th>
+              <tr className="border-b border-gray-100 h-12">
+                <th className="w-[8%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Rasm</th>
+                <th className="w-[11%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Ism</th>
+                <th className="w-[12%] text-center py-2 pr-4 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Telefon</th>
+                <th className="w-[9%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Sana</th>
+                <th className="w-[9%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Kelgan vaqt</th>
+                <th className="w-[8%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Turi</th>
+                <th className="w-[7%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Status</th>
+                <th className="w-[9%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Ketgan vaqt</th>
+                <th className="w-[8%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Turi</th>
+                <th className="w-[7%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Status</th>
+                <th className="w-[12%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Umumiy soat</th>
               </tr>
             </thead>
             <tbody>
-              {paginated.map((a) => (
-                <tr
-                  key={a.id}
-                  className="border-b border-gray-50 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
-                >
-                  <td className="py-2.5 px-3 font-medium text-gray-800 text-sm">
-                    {a.user_full_name || `User #${a.user}`}
-                  </td>
-                  <td className="py-2.5 px-3 text-gray-500 text-xs">
-                    {a.user_phone || '-'}
-                  </td>
-                  <td className="py-2.5 px-3 text-gray-500 text-xs">
-                    {formatDate(a.created_at)}
-                  </td>
-                  <td className="py-2.5 px-3 text-gray-500 text-xs">
-                    {formatTime(a.created_at)}
-                  </td>
-                  <td className="py-2.5 px-3 text-gray-700 text-xs">
-                    {a.attendance_type === 'in' ? 'Kirish' : 'Chiqish'}
-                  </td>
-                  <td className="py-2.5 px-3">
-                    {a.face_verified ? (
-                      <Check className="text-green-500" size={16} />
-                    ) : (
-                      <X className="text-red-500" size={16} />
-                    )}
-                  </td>
-                  <td className="py-2.5 px-3">
-                    {a.location_verified ? (
-                      <Check className="text-green-500" size={16} />
-                    ) : (
-                      <X className="text-red-500" size={16} />
-                    )}
-                  </td>
-                  <td className="py-2.5 px-3">
-                    {a.is_success ? (
-                      <Check className="text-green-500" size={16} />
-                    ) : (
-                      <X className="text-red-500" size={16} />
-                    )}
+              {loading ? (
+                <tr>
+                  <td colSpan={11} className="py-10 text-center">
+                    <Loader2 className="animate-spin text-blue-500 mx-auto" size={24} />
+                    <p className="text-xs text-gray-400 mt-2">Yuklanmoqda...</p>
                   </td>
                 </tr>
-              ))}
+              ) : paginated.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="py-10 text-center text-xs text-gray-400">
+                    Ma'lumotlar topilmadi
+                  </td>
+                </tr>
+              ) : (
+                paginated.map((a, idx) => {
+                  const avatarUrl = getAbsoluteImageUrl(a.rasm)
+
+                  // User object to get phone if needed, though V1 API may not return phone. We can fallback to workerMap
+                  const worker = workerMap.get(String(a.user))
+
+                  return (
+                    <tr
+                      key={a.id || idx}
+                      className="border-b border-gray-50 h-12 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
+                    >
+                      <td className="py-1.5 px-2 text-center align-middle">
+                        <div className="flex justify-center items-center">
+                          {avatarUrl ? (
+                            <img
+                              src={avatarUrl}
+                              alt={a.ism}
+                              className="w-7 h-7 rounded-full object-cover border border-gray-100"
+                            />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-[10px]">
+                              {(a.ism || 'U').charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-2 text-center align-middle">
+                        <span className="font-semibold text-gray-800 text-[12px] truncate block max-w-[90px] mx-auto" title={a.ism || `User #${a.user}`}>
+                          {a.ism || `User #${a.user}`}
+                        </span>
+                      </td>
+                      <td className="py-1.5 pr-4 text-gray-500 text-[11px] text-center align-middle">
+                        {worker?.phone || '-'}
+                      </td>
+                      <td className="py-1.5 px-2 text-gray-500 text-[11px] text-center align-middle">
+                        {formatDate(a.sana)}
+                      </td>
+                      <td className="py-1.5 px-2 text-gray-500 text-[11px] text-center align-middle">
+                        {a.kelgan_vaqt ? formatTime(a.kelgan_vaqt) : '-'}
+                      </td>
+                      <td className="py-1.5 px-2 text-[11px] text-center align-middle">
+                        <div className="flex justify-center items-center">
+                          {a.turi_kirish ? (
+                            a.turi_kirish.toLowerCase() === 'kechikkan' ? (
+                              <span className="px-1.5 py-0.5 rounded-full font-medium bg-orange-50 text-orange-700 border border-orange-100 text-[10px]">
+                                Kechikkan
+                              </span>
+                            ) : a.turi_kirish.toLowerCase() === 'kelmagan' ? (
+                              <span className="px-1.5 py-0.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-100 text-[10px]">
+                                Kelmagan
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 rounded-full font-medium bg-green-50 text-green-700 border border-green-100 text-[10px]">
+                                Kelgan
+                              </span>
+                            )
+                          ) : (
+                            <span className="px-1.5 py-0.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-100 text-[10px]">
+                              Kelmagan
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-2 text-center align-middle">
+                        <div className="flex justify-center items-center">
+                          {a.kelgan_vaqt ? (
+                            a.status_kirish ? (
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
+                                <Check size={12} className="stroke-[3]" />
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
+                                <X size={12} className="stroke-[3]" />
+                              </span>
+                            )
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-2 text-gray-500 text-[11px] text-center align-middle">
+                        {a.ketgan_vaqt ? formatTime(a.ketgan_vaqt) : '-'}
+                      </td>
+                      <td className="py-1.5 px-2 text-[11px] text-center align-middle">
+                        <div className="flex justify-center items-center">
+                          {a.turi_chiqish ? (
+                            <span className="px-1.5 py-0.5 rounded-full font-medium bg-gray-50 text-gray-600 border border-gray-100 text-[10px]">
+                              {a.turi_chiqish}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-2 text-center align-middle">
+                        <div className="flex justify-center items-center">
+                          {a.ketgan_vaqt ? (
+                            a.status_chiqish ? (
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
+                                <Check size={12} className="stroke-[3]" />
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
+                                <X size={12} className="stroke-[3]" />
+                              </span>
+                            )
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-2 text-[11px] text-gray-700 font-semibold text-center align-middle">
+                        {a.umumiy_soat || '-'}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>

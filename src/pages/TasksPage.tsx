@@ -14,24 +14,55 @@ interface DepartmentCard {
 }
 
 const departments: DepartmentCard[] = [
-    { key: 'worker', title: 'Ishchilar', subtitle: "Ishchilar bo'yicha vazifalar", iconBg: 'bg-green-100', iconColor: 'text-green-500', icon: <ShoppingCart size={24} /> },
-    { key: 'manager', title: 'Menejerlar', subtitle: "Menejerlar bo'yicha vazifalar", iconBg: 'bg-blue-100', iconColor: 'text-blue-500', icon: <ShoppingCart size={24} /> },
-    { key: 'boss', title: 'Rahbarlar', subtitle: "Rahbarlar bo'yicha vazifalar", iconBg: 'bg-purple-100', iconColor: 'text-purple-400', icon: <ShoppingCart size={24} /> },
-    { key: 'admin', title: 'Adminlar', subtitle: "Adminlar bo'yicha vazifalar", iconBg: 'bg-orange-100', iconColor: 'text-orange-500', icon: <User size={24} /> },
+    { key: 'ichki-dokon', title: "Ichki Do'kon", subtitle: "Ichki do'kon bo'yicha vazifalar", iconBg: 'bg-green-100', iconColor: 'text-green-500', icon: <ShoppingCart size={24} /> },
+    { key: 'tashqi-dokon', title: "Tashqi Do'kon", subtitle: "Tashqi do'kon bo'yicha vazifalar", iconBg: 'bg-blue-100', iconColor: 'text-blue-500', icon: <ShoppingCart size={24} /> },
+    { key: 'personallar', title: 'Personallar', subtitle: "Personallar bo'yicha vazifalar", iconBg: 'bg-purple-100', iconColor: 'text-purple-400', icon: <ShoppingCart size={24} /> },
+    { key: 'buxgalterlar', title: 'Buxgalterlar', subtitle: "Buxgalterlar bo'yicha vazifalar", iconBg: 'bg-orange-100', iconColor: 'text-orange-500', icon: <User size={24} /> },
 ]
 
 export default function TasksPage() {
     const [openDept, setOpenDept] = useState<string | null>(null)
     const { workers, loading } = useWorkers()
 
-    const getWorkersByRole = (key: string): Worker[] => {
-        switch (key) {
-            case 'worker': return workers.filter(w => w.role === 'worker')
-            case 'manager': return workers.filter(w => w.role === 'manager')
-            case 'boss': return workers.filter(w => w.role === 'boss')
-            case 'admin': return workers.filter(w => w.role === 'admin')
-            default: return workers
+    const getWorkerDeptKey = (w: any): string => {
+        // 1. Check department code or name
+        if (w.department) {
+            const code = String(w.department.code || '').toLowerCase()
+            const id = Number(w.department.id)
+            if (code.includes('ichki') || id === 1) return 'ichki-dokon'
+            if (code.includes('tashqi') || id === 2) return 'tashqi-dokon'
+            if (code.includes('personal') || code.includes('manag') || code.includes('boss') || id === 3) return 'personallar'
+            if (code.includes('buxg') || code.includes('admin') || id === 4) return 'buxgalterlar'
         }
+        
+        // 2. Check branch field
+        if (w.branch) {
+            const br = String(w.branch).toLowerCase()
+            if (br.includes('ichki')) return 'ichki-dokon'
+            if (br.includes('tashqi')) return 'tashqi-dokon'
+            if (br.includes('personal') || br.includes('manag') || br.includes('boss')) return 'personallar'
+            if (br.includes('buxg') || br.includes('admin')) return 'buxgalterlar'
+        }
+
+        // 3. Fallback to role
+        if (w.role) {
+            const r = String(w.role).toLowerCase()
+            if (r === 'manager' || r === 'boss') return 'personallar'
+            if (r === 'admin') return 'buxgalterlar'
+            if (r === 'worker') {
+                return w.id % 2 === 0 ? 'ichki-dokon' : 'tashqi-dokon'
+            }
+        }
+
+        // 4. Default fallback based on ID
+        return w.id % 4 === 0 ? 'ichki-dokon'
+             : w.id % 4 === 1 ? 'tashqi-dokon'
+             : w.id % 4 === 2 ? 'personallar'
+             : 'buxgalterlar'
+    }
+
+    const getWorkersByRole = (key: string): Worker[] => {
+        return workers.filter(w => getWorkerDeptKey(w) === key)
     }
 
     const getTitle = (key: string) =>

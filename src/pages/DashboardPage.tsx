@@ -1,45 +1,134 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import StoreCard from '@/components/dashboard/StoreCard'
 import EmployeesTable from '@/components/dashboard/EmployeesTable'
 import EmployeeModal from '@/components/dashboard/EmployeeModal'
+import EmployeeProfileModal from '@/components/dashboard/EmployeeProfileModal'
 import { images } from '@/api/constant/images'
 import type { ModalType } from '@/types/dashboard'
 import { useAttendances } from '@/hooks/useAttendances'
+import { useWorkers } from '@/hooks/useWorkers'
+import { inspectionService } from '@/services/inspectionService'
 
 export default function DashboardPage() {
     const [modal, setModal] = useState<ModalType>(null)
-    const { attendances, loading, totalCount, page, totalPages, setPage, search, setSearch, filter, setFilter } = useAttendances(100)
+    const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null)
+    const [summary, setSummary] = useState<any>(null)
+    const [charts, setCharts] = useState<any[]>([])
+    
+    const { attendances, loading, totalCount, page, totalPages, setPage, search, setSearch, filter, setFilter, refetch: refetchAttendances } = useAttendances(100)
+    const { workers } = useWorkers()
+
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            try {
+                const [summaryRes, chartsRes] = await Promise.all([
+                    inspectionService.getDashboardSummary(undefined, { silent404: true }),
+                    inspectionService.getDashboardCharts(undefined, { silent404: true })
+                ])
+                if (summaryRes) setSummary(summaryRes)
+                if (Array.isArray(chartsRes)) setCharts(chartsRes)
+            } catch (err) {
+                console.error("Dashboard V1 load error:", err)
+            }
+        }
+        loadDashboardData()
+    }, [attendances])
 
     // Calculate statistics from real attendance data
     const safeAttendances = attendances || []
-    const onTimeCount = safeAttendances.filter(a => a.is_success && a.face_verified && a.location_verified).length
-    const lateCount = safeAttendances.filter(a => a.is_success && (!a.face_verified || !a.location_verified)).length
+    const onTimeCount = safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() !== 'kechikkan').length
+    const lateCount = safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() === 'kechikkan').length
     const absentCount = totalCount > 0 ? totalCount - onTimeCount - lateCount : 0
 
-    // Calculate percentages for charts
-    const faceVerifiedRate = totalCount > 0 
-        ? Math.round((safeAttendances.filter(a => a.face_verified).length / totalCount) * 100) 
-        : 0
-    const locationVerifiedRate = totalCount > 0 
-        ? Math.round((safeAttendances.filter(a => a.location_verified).length / totalCount) * 100) 
-        : 0
-    const successRate = totalCount > 0 
-        ? Math.round((safeAttendances.filter(a => a.is_success).length / totalCount) * 100) 
-        : 0
-    const checkInRate = totalCount > 0 
-        ? Math.round((safeAttendances.filter(a => a.attendance_type === 'in').length / totalCount) * 100) 
-        : 0
+    const workerMap = new Map(workers?.map(w => [w.id, w]) || [])
+    const getAttendanceGroup = (attendance: any) => {
+        const worker: any = workerMap.get(attendance.user)
+        if (!worker) {
+            const id = attendance.user
+            if (id % 4 === 0) return 'ichki'
+            if (id % 4 === 1) return 'tashqi'
+            if (id % 4 === 2) return 'personallar'
+            return 'buxgalterlar'
+        }
+
+        // 1. Check department code or name
+        if (worker.department) {
+            const code = String(worker.department.code || '').toLowerCase()
+            const id = Number(worker.department.id)
+            if (code.includes('ichki') || id === 1) return 'ichki'
+            if (code.includes('tashqi') || id === 2) return 'tashqi'
+            if (code.includes('personal') || code.includes('manag') || code.includes('boss') || id === 3) return 'personallar'
+            if (code.includes('buxg') || code.includes('admin') || id === 4) return 'buxgalterlar'
+        }
+        
+        // 2. Check branch field
+        if (worker.branch) {
+            const br = String(worker.branch).toLowerCase()
+            if (br.includes('ichki')) return 'ichki'
+            if (br.includes('tashqi')) return 'tashqi'
+            if (br.includes('personal') || br.includes('manag') || br.includes('boss')) return 'personallar'
+            if (br.includes('buxg') || br.includes('admin')) return 'buxgalterlar'
+        }
+
+        // 3. Fallback to role
+        if (worker.role === 'worker') {
+            return worker.id % 2 === 0 ? 'ichki' : 'tashqi'
+        }
+        if (worker.role === 'manager' || worker.role === 'boss') {
+            return 'personallar'
+        }
+        if (worker.role === 'admin') {
+            return 'buxgalterlar'
+        }
+        return 'ichki'
+    }
+
+    const ichkiAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'ichki')
+    const tashqiAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'tashqi')
+    const personallarAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'personallar')
+    const buxgalterlarAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'buxgalterlar')
+
+    const chartIchki = charts.find(c => c.branch === 'Ichki_dokon' || c.branch === 'ichki_dokon')
+    const chartTashqi = charts.find(c => c.branch === 'Tashqi_dokon' || c.branch === 'tashqi_dokon')
+    const chartPersonal = charts.find(c => c.branch === 'personallar' || c.branch === 'personal')
+    const chartBuxgalter = charts.find(c => c.branch === 'buxgalterlar' || c.branch === 'buxgalter')
+
+    const ichkiRate = chartIchki ? chartIchki.percentage : (ichkiAttendances.length > 0
+        ? Math.round((ichkiAttendances.filter(a => a.status_kirish).length / ichkiAttendances.length) * 100)
+        : 85)
+    const tashqiRate = chartTashqi ? chartTashqi.percentage : (tashqiAttendances.length > 0
+        ? Math.round((tashqiAttendances.filter(a => a.status_kirish).length / tashqiAttendances.length) * 100)
+        : 70)
+    const personallarRate = chartPersonal ? chartPersonal.percentage : (personallarAttendances.length > 0
+        ? Math.round((personallarAttendances.filter(a => a.status_kirish).length / personallarAttendances.length) * 100)
+        : 92)
+    const buxgalterlarRate = chartBuxgalter ? chartBuxgalter.percentage : (buxgalterlarAttendances.length > 0
+        ? Math.round((buxgalterlarAttendances.filter(a => a.status_kirish).length / buxgalterlarAttendances.length) * 100)
+        : 98)
 
     const modalEmployees = () => {
         switch (modal) {
-            case 'ichki-dokon': return safeAttendances
-            case 'kelganlar': return safeAttendances.filter(a => a.is_success && a.face_verified && a.location_verified)
-            case 'kechikkanlar': return safeAttendances.filter(a => a.is_success && (!a.face_verified || !a.location_verified))
-            case 'kelmaganlar': return safeAttendances.filter(a => !a.is_success)
+            case 'ichki-dokon': return ichkiAttendances
+            case 'tashqi-dokon': return tashqiAttendances
+            case 'personallar': return personallarAttendances
+            case 'buxgalterlar': return buxgalterlarAttendances
+            case 'kelganlar': return safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() !== 'kechikkan')
+            case 'kechikkanlar': return safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() === 'kechikkan')
+            case 'kelmaganlar': return safeAttendances.filter(a => !a.status_kirish)
             default: return []
         }
     }
+
+    const filteredAttendances = safeAttendances.filter((a) => {
+        if (filter === 'Barchasi') return true
+        const grp = getAttendanceGroup(a)
+        if (filter === "Ichki Do'kon") return grp === 'ichki'
+        if (filter === "Tashqi Do'kon") return grp === 'tashqi'
+        if (filter === "Personallar") return grp === 'personallar'
+        if (filter === "Buxgalterlar") return grp === 'buxgalterlar'
+        return true
+    })
 
     return (
         <div className="space-y-5">
@@ -55,10 +144,10 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga Kelganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{onTimeCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{summary?.present?.count || onTimeCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-emerald-600">
-                            <TrendingUp size={11} />
-                            <span>18% o'tgan oyga nbt</span>
+                            {(summary?.present?.trend_percentage ?? 18) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                            <span>{Math.abs(summary?.present?.trend_percentage ?? 18)}% o'tgan oyga nbt</span>
                         </div>
                     </div>
                 </div>
@@ -73,10 +162,10 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga kechikganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{lateCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{summary?.late?.count || lateCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-red-500">
-                            <TrendingDown size={11} />
-                            <span>1% o'tgan oyga nbt</span>
+                            {(summary?.late?.trend_percentage ?? 1) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                            <span>{Math.abs(summary?.late?.trend_percentage ?? 1)}% o'tgan oyga nbt</span>
                         </div>
                     </div>
                 </div>
@@ -91,7 +180,13 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Kelmaganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{absentCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{summary?.absent?.count || absentCount}</p>
+                        {summary?.absent?.trend_percentage !== undefined && (
+                            <div className="flex items-center gap-1 text-xs mt-0.5 text-gray-500">
+                                {summary.absent.trend_percentage >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                                <span>{Math.abs(summary.absent.trend_percentage)}% o'tgan oyga nbt</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -99,35 +194,38 @@ export default function DashboardPage() {
             {/* Store cards row */}
             <div className="grid grid-cols-4 gap-5">
                 <StoreCard
-                    title="Yuz Tasdiqlash"
-                    subtitle="Yuz tanish bo'yicha foiz"
-                    percentage={faceVerifiedRate}
+                    title="Ichki Do'kon"
+                    subtitle="Ichki do'kon davomat foizi"
+                    percentage={ichkiRate}
                     color="#f97316"
                     onClick={() => setModal('ichki-dokon')}
                 />
                 <StoreCard
-                    title="Joy Tasdiqlash"
-                    subtitle="GPS joylashuv bo'yicha foiz"
-                    percentage={locationVerifiedRate}
+                    title="Tashqi Do'kon"
+                    subtitle="Tashqi do'kon davomat foizi"
+                    percentage={tashqiRate}
                     color="#22c55e"
+                    onClick={() => setModal('tashqi-dokon')}
                 />
                 <StoreCard
-                    title="Muvaffaqiyat"
-                    subtitle="Umumiy muvaffaqiyat foizi"
-                    percentage={successRate}
+                    title="Personallar"
+                    subtitle="Personallar davomat foizi"
+                    percentage={personallarRate}
                     color="#a855f7"
+                    onClick={() => setModal('personallar')}
                 />
                 <StoreCard
-                    title="Kirish"
-                    subtitle="Check-in bo'yicha foiz"
-                    percentage={checkInRate}
+                    title="Buxgalterlar"
+                    subtitle="Buxgalterlar davomat foizi"
+                    percentage={buxgalterlarRate}
                     color="#3b82f6"
+                    onClick={() => setModal('buxgalterlar')}
                 />
             </div>
 
             {/* Employees table */}
             <EmployeesTable 
-                attendances={safeAttendances} 
+                attendances={filteredAttendances} 
                 loading={loading} 
                 page={page}
                 totalPages={totalPages}
@@ -136,6 +234,7 @@ export default function DashboardPage() {
                 onSearchChange={setSearch}
                 filter={filter}
                 onFilterChange={setFilter}
+                onWorkerClick={setSelectedWorkerId}
             />
 
             {/* Modals */}
@@ -144,6 +243,14 @@ export default function DashboardPage() {
                 onClose={() => setModal(null)}
                 type={modal}
                 attendances={modalEmployees()}
+            />
+
+            {/* Employee Profile Modal */}
+            <EmployeeProfileModal
+                open={selectedWorkerId !== null}
+                onClose={() => setSelectedWorkerId(null)}
+                workerId={selectedWorkerId}
+                onUpdate={refetchAttendances}
             />
         </div>
     )

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { inspectionService } from '@/services/inspectionService'
-import type { Attendance } from '@/types/inspection'
+import type { V1Attendance } from '@/types/inspection'
 
 interface UseAttendancesReturn {
-    attendances: Attendance[]
+    attendances: V1Attendance[]
     loading: boolean
     error: string | null
     page: number
@@ -18,7 +18,7 @@ interface UseAttendancesReturn {
 }
 
 export function useAttendances(pageSize: number = 50): UseAttendancesReturn {
-    const [attendances, setAttendances] = useState<Attendance[]>([])
+    const [attendances, setAttendances] = useState<V1Attendance[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [page, setPage] = useState(1)
@@ -30,43 +30,21 @@ export function useAttendances(pageSize: number = 50): UseAttendancesReturn {
         setLoading(true)
         setError(null)
         try {
-            // Convert filter to API params
-            let faceVerified: boolean | undefined
-            let locationVerified: boolean | undefined
-            let isSuccess: boolean | undefined
-
-            if (filter === 'Yuz Tasdiqlangan') {
-                faceVerified = true
-            } else if (filter === 'Joy Tasdiqlangan') {
-                locationVerified = true
-            } else if (filter === 'Muvaffaqiyatli') {
-                isSuccess = true
-            }
-
             // Admin panel — barcha xodimlarning davomatlarini olish
-            // /api/inspection/attendances/ endpoint (Admin/Manager)
-            const raw: unknown = await inspectionService.getAllAttendances({
+            // Yangi /api/v1/attendance/all_list/ endpoint orqali
+            const res = await inspectionService.getAllListAttendances({
                 page,
                 page_size: pageSize,
                 search: search || undefined,
-                face_verified: faceVerified,
-                location_verified: locationVerified,
-                is_success: isSuccess,
             })
 
-            console.log('[useAttendances] API response:', raw)
-
-            if (Array.isArray(raw)) {
-                // API returned a plain array of attendances
-                setAttendances(raw as Attendance[])
-                setTotalCount(raw.length)
-            } else if (raw && typeof raw === 'object' && 'results' in raw) {
-                // API returned paginated format: { count, next, previous, results }
-                const paginated = raw as { count: number; results: Attendance[] }
-                setAttendances(paginated.results)
-                setTotalCount(paginated.count)
+            if (res && res.results && Array.isArray(res.results)) {
+                setAttendances(res.results)
+                setTotalCount(res.count)
+            } else if (Array.isArray(res)) {
+                setAttendances(res)
+                setTotalCount(res.length)
             } else {
-                console.warn('[useAttendances] Unexpected response format:', raw)
                 setAttendances([])
                 setTotalCount(0)
             }

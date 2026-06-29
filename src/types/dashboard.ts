@@ -24,6 +24,9 @@ export interface Task {
 
 export type ModalType =
     | 'ichki-dokon'
+    | 'tashqi-dokon'
+    | 'personallar'
+    | 'buxgalterlar'
     | 'kelganlar'
     | 'kechikkanlar'
     | 'kelmaganlar'

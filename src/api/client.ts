@@ -237,12 +237,15 @@ class ApiClient {
                     }
 
                     if (status === 404 && !isPublicAuth) {
-                        const base = (this.client.defaults.baseURL ?? '').toString()
-                        const hint =
-                            base.length === 0
-                                ? 'API manzili sozlanmagan (VITE_API_BASE_URL).'
-                                : `API manzili: ${base}`
-                        toast.error(`Endpoint topilmadi. ${hint}`)
+                        const silent404 = (originalRequest as any)?._silent404
+                        if (!silent404) {
+                            const base = (this.client.defaults.baseURL ?? '').toString()
+                            const hint =
+                                base.length === 0
+                                    ? 'API manzili sozlanmagan (VITE_API_BASE_URL).'
+                                    : `API manzili: ${base}`
+                            toast.error(`Endpoint topilmadi. ${hint}`)
+                        }
                     }
 
                     return Promise.reject(apiError)

@@ -31,16 +31,16 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>
-                        Yangi Ro'l{' '}
+                        Yangi Lavozim{' '}
                         <span className="text-[#64b5f6]">Qo'shish</span>
                     </DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4 mt-2">
-                    {/* Rol sarlavhasi */}
+                    {/* Lavozim nomi */}
                     <div>
                         <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">
-                            Rol Sarlavhasi
+                            Lavozim Nomi
                         </label>
                         <Input
                             placeholder="Buxgalter..."
@@ -50,10 +50,10 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
                         />
                     </div>
 
-                    {/* Rol prinsipi */}
+                    {/* Lavozim majburiyatlari */}
                     <div>
                         <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">
-                            Rol Prinsipi
+                            Lavozim Majburiyatlari
                         </label>
                         <Input
                             placeholder="Umumiy Ko'rinish"
