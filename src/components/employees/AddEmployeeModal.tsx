@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Camera, Clock, Loader2 } from 'lucide-react'
+import { Camera, Clock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { inspectionService } from '@/services/inspectionService'
 
@@ -36,6 +36,7 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
   const [departments, setDepartments] = useState<any[]>([])
   
   const [form, setForm] = useState(INITIAL_FORM)
+  const [showPassword, setShowPassword] = useState(false)
 
   // Resolve default department ID from label if departments are loaded
   const defaultDeptId = departments.find((d) => d.name === defaultLocation)?.id ?? form?.departmentId ?? 1
@@ -286,13 +287,22 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
               <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">
                 Parol *
               </label>
-              <Input
-                placeholder="Parol yozing..."
-                type="password"
-                className="h-11 text-[13px] rounded-xl border-gray-200"
-                value={form.password}
-                onChange={(e) => set('password', e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  placeholder="Parol yozing..."
+                  type={showPassword ? "text" : "password"}
+                  className="h-11 text-[13px] rounded-xl border-gray-200 pr-10"
+                  value={form.password}
+                  onChange={(e) => set('password', e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             {/* ---- Submit ---- */}

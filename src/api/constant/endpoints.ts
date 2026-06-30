@@ -21,10 +21,11 @@ export const API_ENDPOINTS = {
 
   // Attendance Status and Export Endpoints
   ABSENT_ATTENDANCES: '/api/v1/attendance/absent/',
-  ALL_LIST_ATTENDANCES: '/api/v1/attendance/all/',
+  ALL_LIST_ATTENDANCES: '/api/inspection/attendance/history/',
   EXPORT_ATTENDANCES: '/api/v1/attendance/export/',
   LATE_ATTENDANCES: '/api/v1/attendance/late/',
   PRESENT_ATTENDANCES: '/api/v1/attendance/present/',
+  ATTENDANCE_EXCUSE: '/api/v1/attendance/excuse/',
 
   // Dashboard & Employees V1
   DASHBOARD_SUMMARY: '/api/v1/dashboard/summary/',

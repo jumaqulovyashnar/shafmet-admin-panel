@@ -43,6 +43,7 @@ export interface AttendanceDetailResponse extends Attendance {}
 
 // Yangi API (v1) uchun format
 export interface V1Attendance {
+  [key: string]: any
   id?: number                     // Backend agar bersa
   user?: number                   // worker id
   rasm: string                    // rasm URL
@@ -68,6 +69,7 @@ export interface V1AttendanceListResponse {
 export type WorkerRole = 'boss' | 'manager' | 'worker' | 'admin'
 
 export interface Worker {
+  [key: string]: any
   id: number
   phone: string
   full_name: string

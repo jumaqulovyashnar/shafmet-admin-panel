@@ -17,8 +17,10 @@ import { inspectionService } from '@/services/inspectionService'
 interface Zone {
     id: number
     name: string
-    lat: number
-    lng: number
+    lat?: number
+    lng?: number
+    latitude?: number
+    longitude?: number
     radius: number
     is_active?: boolean
 }
@@ -42,13 +44,15 @@ export default function GeoPage() {
     const fetchZones = async () => {
         setLoading(true)
         try {
-            const list = await inspectionService.getZones()
-            if (Array.isArray(list)) {
-                setZones(list)
+            const list: any = await inspectionService.getZones()
+            const zonesData = Array.isArray(list) ? list : (list?.results && Array.isArray(list.results) ? list.results : null)
+            
+            if (zonesData) {
+                setZones(zonesData)
             } else {
                 // Fallback mockup
                 setZones([
-                    { id: 1, name: "Shafmet Bosh Ofisi", lat: 41.2995, lng: 69.2401, radius: 150, is_active: true },
+                    { id: 1, name: "Asosiy Hudud", lat: 39.01175042924258, lng: 65.56598827564635, radius: 150, is_active: true },
                     { id: 2, name: "Ichki Do'kon Hududi", lat: 41.3110, lng: 69.2797, radius: 200, is_active: true },
                 ])
             }
@@ -56,7 +60,7 @@ export default function GeoPage() {
             console.error(e)
             // Fallback mockup
             setZones([
-                { id: 1, name: "Shafmet Bosh Ofisi", lat: 41.2995, lng: 69.2401, radius: 150, is_active: true },
+                { id: 1, name: "Asosiy Hudud", lat: 39.01175042924258, lng: 65.56598827564635, radius: 150, is_active: true },
                 { id: 2, name: "Ichki Do'kon Hududi", lat: 41.3110, lng: 69.2797, radius: 200, is_active: true },
             ])
         } finally {
@@ -72,8 +76,8 @@ export default function GeoPage() {
         setEditingZone(null)
         setForm({
             name: '',
-            lat: '41.31108',
-            lng: '69.27972',
+            lat: '39.01175042924258',
+            lng: '65.56598827564635',
             radius: '100',
             is_active: true
         })
@@ -84,9 +88,9 @@ export default function GeoPage() {
         setEditingZone(zone)
         setForm({
             name: zone.name,
-            lat: String(zone.lat),
-            lng: String(zone.lng),
-            radius: String(zone.radius),
+            lat: String(zone.lat || zone.latitude || ''),
+            lng: String(zone.lng || zone.longitude || ''),
+            radius: String(zone.radius || (zone as any).allowed_radius || (zone as any).distance || 100),
             is_active: zone.is_active !== undefined ? zone.is_active : true
         })
         setModalOpen(true)
@@ -102,6 +106,8 @@ export default function GeoPage() {
             name: form.name,
             lat: parseFloat(form.lat),
             lng: parseFloat(form.lng),
+            latitude: parseFloat(form.lat), // Send both just in case backend expects full words
+            longitude: parseFloat(form.lng),
             radius: parseInt(form.radius),
             is_active: form.is_active
         }
@@ -197,29 +203,43 @@ export default function GeoPage() {
                                 <div className="space-y-2 mb-6">
                                     <div className="flex justify-between text-xs border-b border-gray-50 pb-1.5">
                                         <span className="text-gray-400 font-medium">Kenglik (Latitude)</span>
-                                        <span className="text-gray-800 font-semibold">{zone.lat}</span>
+                                        <span className="text-gray-800 font-semibold">{zone.lat || (zone as any).latitude || '-'}</span>
                                     </div>
                                     <div className="flex justify-between text-xs border-b border-gray-50 pb-1.5">
                                         <span className="text-gray-400 font-medium">Uzunlik (Longitude)</span>
-                                        <span className="text-gray-800 font-semibold">{zone.lng}</span>
+                                        <span className="text-gray-800 font-semibold">{zone.lng || (zone as any).longitude || '-'}</span>
                                     </div>
-                                    <div className="flex justify-between text-xs pb-1.5">
-                                        <span className="text-gray-400 font-medium">Ruxsat radiusi</span>
-                                        <span className="text-blue-600 font-bold">{zone.radius} metr</span>
-                                    </div>
+                                    { (zone.radius ?? (zone as any).allowed_radius ?? (zone as any).distance) != null && (
+                                        <div className="flex justify-between text-xs pb-1.5">
+                                            <span className="text-gray-400 font-medium">Ruxsat radiusi</span>
+                                            <span className="text-blue-600 font-bold">{zone.radius ?? (zone as any).allowed_radius ?? (zone as any).distance} metr</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Canvas Visual Circle Map Widget */}
-                            <div className="w-full h-24 bg-slate-50 rounded-xl mb-4 relative flex items-center justify-center border border-slate-100 overflow-hidden">
-                                <div className="absolute w-12 h-12 rounded-full bg-blue-400/20 border border-blue-500/50 flex items-center justify-center animate-ping" style={{ animationDuration: '3s' }}></div>
-                                <div className="absolute w-8 h-8 rounded-full bg-blue-500/30 border-2 border-blue-500 flex items-center justify-center">
+                            <a 
+                                href={`https://www.google.com/maps?q=${zone.lat || (zone as any).latitude},${zone.lng || (zone as any).longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full h-24 bg-slate-50 rounded-xl mb-4 relative flex items-center justify-center border border-slate-100 overflow-hidden group cursor-pointer hover:border-blue-300 transition-colors block"
+                                title="Google Xaritada Ko'rish"
+                            >
+                                <div className="absolute inset-0 bg-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
+                                <div className="absolute w-12 h-12 rounded-full bg-blue-400/20 border border-blue-500/50 flex items-center justify-center animate-ping z-10" style={{ animationDuration: '3s' }}></div>
+                                <div className="absolute w-8 h-8 rounded-full bg-blue-500/30 border-2 border-blue-500 flex items-center justify-center z-10">
                                     <MapPin className="text-blue-600 w-4 h-4" />
                                 </div>
-                                <span className="absolute bottom-2 right-2.5 bg-black/60 text-[9px] text-white px-1.5 py-0.5 rounded font-mono font-medium">
-                                    Radius: {zone.radius}m
+                                { (zone.radius ?? (zone as any).allowed_radius ?? (zone as any).distance) != null && (
+                                    <span className="absolute bottom-2 right-2.5 bg-black/60 text-[9px] text-white px-1.5 py-0.5 rounded font-mono font-medium z-10">
+                                        Radius: {zone.radius ?? (zone as any).allowed_radius ?? (zone as any).distance}m
+                                    </span>
+                                )}
+                                <span className="absolute top-2 left-2.5 bg-white/80 text-blue-600 text-[10px] px-1.5 py-0.5 rounded font-semibold opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10">
+                                    Xaritada ochish ↗
                                 </span>
-                            </div>
+                            </a>
 
                             <div className="flex gap-2">
                                 <Button onClick={() => handleOpenEdit(zone)} variant="outline" size="sm" className="flex-1 text-xs gap-1.5 rounded-xl cursor-pointer">
@@ -267,7 +287,7 @@ export default function GeoPage() {
                                 <Input
                                     type="number"
                                     step="0.000001"
-                                    placeholder="41.2995"
+                                    placeholder="39.011750"
                                     className="h-10 text-xs rounded-xl font-mono"
                                     value={form.lat}
                                     onChange={(e) => setForm(f => ({ ...f, lat: e.target.value }))}
@@ -278,7 +298,7 @@ export default function GeoPage() {
                                 <Input
                                     type="number"
                                     step="0.000001"
-                                    placeholder="69.2401"
+                                    placeholder="65.565988"
                                     className="h-10 text-xs rounded-xl font-mono"
                                     value={form.lng}
                                     onChange={(e) => setForm(f => ({ ...f, lng: e.target.value }))}

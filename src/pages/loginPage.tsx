@@ -34,7 +34,12 @@ const LoginPage = () => {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const res = await authService.login(values)
+      // Telefon raqamidan bo'shliqlarni olib tashlash
+      const formattedValues = {
+        ...values,
+        phone: values.phone.replace(/\s+/g, ''),
+      }
+      const res = await authService.login(formattedValues)
 
       // Token olish — bir nechta format qo'llab-quvvatlanadi
       const accessToken = res.access ?? res.token ?? res.access_token ?? ''

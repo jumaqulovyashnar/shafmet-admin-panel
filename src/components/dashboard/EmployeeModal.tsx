@@ -84,48 +84,19 @@ export default function EmployeeModal({ open, onClose, type, attendances }: Empl
     const fetchData = async () => {
       setLoading(true)
       try {
-        let res: any
-        let branch: string | undefined
-        if (type === 'ichki-dokon') branch = 'Ichki dokon'
-        else if (type === 'tashqi-dokon') branch = 'Tashqi dokon'
-        else if (type === 'personallar') branch = 'Personallar'
-        else if (type === 'buxgalterlar') branch = 'Buxgalter'
-
-        if (type === 'kelganlar') {
-          res = await inspectionService.getPresentAttendances({ page, page_size: ITEMS_PER_PAGE, search })
-        } else if (type === 'kechikkanlar') {
-          res = await inspectionService.getLateAttendances({ page, page_size: ITEMS_PER_PAGE, search })
-        } else if (type === 'kelmaganlar') {
-          res = await inspectionService.getAbsentAttendances({ branch, search })
-        } else {
-          res = await inspectionService.getAllListAttendances({ branch, page, page_size: ITEMS_PER_PAGE, search })
+        let localList = attendances;
+        if (search) {
+             const s = search.toLowerCase();
+             localList = localList.filter(a => {
+                 const name = (a.ism || (a as any).worker_name || (a as any).full_name || (typeof a.user === 'object' ? (a.user as any)?.full_name : '') || '').toLowerCase();
+                 const phone = ((a as any).telefon || (a as any).phone || (a as any).user_phone || (typeof a.user === 'object' ? (a.user as any)?.phone : '') || '').toLowerCase();
+                 return name.includes(s) || phone.includes(s);
+             });
         }
-
-        if (res && res.results && Array.isArray(res.results)) {
-          const list = res.results
-          if (list.length > 0) {
-            setApiAttendances(list)
-            setTotalCount(res.count || list.length)
-          } else {
-            // Fallback to client-side calculations if API returned 0 results
-            setApiAttendances(attendances)
-            setTotalCount(attendances.length)
-          }
-        } else if (Array.isArray(res)) {
-          if (res.length > 0) {
-            setApiAttendances(res)
-            setTotalCount(res.length)
-          } else {
-            setApiAttendances(attendances)
-            setTotalCount(attendances.length)
-          }
-        } else {
-          setApiAttendances(attendances)
-          setTotalCount(attendances.length)
-        }
+        setTotalCount(localList.length)
+        setApiAttendances(localList.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE))
       } catch (err) {
         console.error("EmployeeModal fetch error:", err)
-        // Fallback to prop
         setApiAttendances(attendances)
         setTotalCount(attendances.length)
       } finally {
@@ -312,24 +283,26 @@ export default function EmployeeModal({ open, onClose, type, attendances }: Empl
                       </td>
                       <td className="py-1.5 px-2 text-[11px] text-center align-middle">
                         <div className="flex justify-center items-center">
-                          {a.turi_kirish ? (
-                            a.turi_kirish.toLowerCase() === 'kechikkan' ? (
+                          {a.is_late || a.turi_kirish?.toLowerCase() === 'kechikkan' ? (
                               <span className="px-1.5 py-0.5 rounded-full font-medium bg-orange-50 text-orange-700 border border-orange-100 text-[10px]">
                                 Kechikkan
                               </span>
-                            ) : a.turi_kirish.toLowerCase() === 'kelmagan' ? (
+                          ) : a.turi_kirish ? (
+                            a.turi_kirish.toLowerCase() === 'kelmagan' ? (
                               <span className="px-1.5 py-0.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-100 text-[10px]">
                                 Kelmagan
                               </span>
                             ) : (
                               <span className="px-1.5 py-0.5 rounded-full font-medium bg-green-50 text-green-700 border border-green-100 text-[10px]">
-                                Kelgan
+                                {a.turi_kirish}
                               </span>
                             )
-                          ) : (
+                          ) : a.status_kirish === false ? (
                             <span className="px-1.5 py-0.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-100 text-[10px]">
                               Kelmagan
                             </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
                           )}
                         </div>
                       </td>

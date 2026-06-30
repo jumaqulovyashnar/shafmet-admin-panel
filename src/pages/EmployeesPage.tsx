@@ -199,6 +199,7 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Holati</th>
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Yuz Profili</th>
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Qo'shilgan</th>
+                        <th className="text-center py-2 px-3 text-[11px] font-medium text-gray-400">Tahrirlash</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -246,6 +247,18 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
                             </td>
                             <td className="py-3 px-3 text-[12px] text-gray-400">
                                 {new Date(worker.created_at).toLocaleDateString('uz-UZ')}
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        onWorkerClick?.(worker.id)
+                                    }}
+                                    className="inline-flex items-center justify-center p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Tahrirlash"
+                                >
+                                    <Pencil size={14} />
+                                </button>
                             </td>
                         </tr>
                     ))}

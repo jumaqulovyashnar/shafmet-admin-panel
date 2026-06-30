@@ -38,11 +38,19 @@ export default function EmployeesTable({
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
     const formatTime = (timeString: string) => {
+        if (!timeString || timeString === 'null') return '-'
+        
+        // Agar faqat vaqt kelsa, masalan "08:30" yoki "08:30:00"
+        if (/^\d{2}:\d{2}(:\d{2})?$/.test(timeString)) {
+            return timeString.substring(0, 5)
+        }
+
         try {
             const date = new Date(timeString)
+            if (isNaN(date.getTime())) return '-' // Fix Invalid Date issue
             return date.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
         } catch {
-            return timeString
+            return '-'
         }
     }
 
@@ -172,20 +180,24 @@ export default function EmployeesTable({
                                         </td>
                                         <td className="py-1.5 px-2 text-[11px] text-center align-middle">
                                             <div className="flex justify-center items-center">
-                                                {a.turi_kirish ? (
-                                                    a.turi_kirish.toLowerCase() === 'kechikkan' ? (
-                                                        <span className="px-1.5 py-0.5 rounded-full font-medium bg-orange-50 text-orange-700 border border-orange-100 text-[10px]">
-                                                            Kechikkan
-                                                        </span>
-                                                    ) : a.turi_kirish.toLowerCase() === 'kelmagan' ? (
+                                                {a.is_late || a.turi_kirish?.toLowerCase() === 'kechikkan' ? (
+                                                    <span className="px-1.5 py-0.5 rounded-full font-medium bg-orange-50 text-orange-700 border border-orange-100 text-[10px]">
+                                                        Kechikkan
+                                                    </span>
+                                                ) : a.turi_kirish ? (
+                                                    a.turi_kirish.toLowerCase() === 'kelmagan' ? (
                                                         <span className="px-1.5 py-0.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-100 text-[10px]">
                                                             Kelmagan
                                                         </span>
                                                     ) : (
                                                         <span className="px-1.5 py-0.5 rounded-full font-medium bg-green-50 text-green-700 border border-green-100 text-[10px]">
-                                                            Kelgan
+                                                            {a.turi_kirish}
                                                         </span>
                                                     )
+                                                ) : a.status_kirish === false ? (
+                                                    <span className="px-1.5 py-0.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-100 text-[10px]">
+                                                        Kelmagan
+                                                    </span>
                                                 ) : (
                                                     <span className="text-gray-400">-</span>
                                                 )}
@@ -193,16 +205,14 @@ export default function EmployeesTable({
                                         </td>
                                         <td className="py-1.5 px-2 text-center align-middle">
                                             <div className="flex justify-center items-center">
-                                                {a.kelgan_vaqt ? (
-                                                    a.status_kirish ? (
-                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
-                                                            <Check size={12} className="stroke-[3]" />
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
-                                                            <X size={12} className="stroke-[3]" />
-                                                        </span>
-                                                    )
+                                                {a.status_kirish === true ? (
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
+                                                        <Check size={12} className="stroke-[3]" />
+                                                    </span>
+                                                ) : a.status_kirish === false ? (
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
+                                                        <X size={12} className="stroke-[3]" />
+                                                    </span>
                                                 ) : (
                                                     <span className="text-gray-400">-</span>
                                                 )}
@@ -224,16 +234,14 @@ export default function EmployeesTable({
                                         </td>
                                         <td className="py-1.5 px-2 text-center align-middle">
                                             <div className="flex justify-center items-center">
-                                                {a.ketgan_vaqt ? (
-                                                    a.status_chiqish ? (
-                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
-                                                            <Check size={12} className="stroke-[3]" />
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
-                                                            <X size={12} className="stroke-[3]" />
-                                                        </span>
-                                                    )
+                                                {a.status_chiqish === true ? (
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
+                                                        <Check size={12} className="stroke-[3]" />
+                                                    </span>
+                                                ) : a.status_chiqish === false ? (
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
+                                                        <X size={12} className="stroke-[3]" />
+                                                    </span>
                                                 ) : (
                                                     <span className="text-gray-400">-</span>
                                                 )}

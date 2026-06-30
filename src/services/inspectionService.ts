@@ -279,6 +279,10 @@ export const inspectionService = {
     } as any)
   },
 
+  async updateAttendanceExcuse(data: { worker_id: number; date?: string; is_excused: boolean; excuse_reason?: string }): Promise<any> {
+    return apiClient.post(API_ENDPOINTS.ATTENDANCE_EXCUSE, data)
+  },
+
   // --- V1 DASHBOARD & EMPLOYEES ---
   async getDashboardSummary(
     params?: {

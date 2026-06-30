@@ -37,19 +37,35 @@ export default function DashboardPage() {
 
     // Calculate statistics from real attendance data
     const safeAttendances = attendances || []
-    const onTimeCount = safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() !== 'kechikkan').length
-    const lateCount = safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() === 'kechikkan').length
-    const absentCount = totalCount > 0 ? totalCount - onTimeCount - lateCount : 0
+    
+    const isLate = (a: any) => a.turi_kirish?.toLowerCase() === 'kechikkan' || a.turi_kirish?.toLowerCase() === 'kechikgan' || a.is_late === true
+    const isAbsent = (a: any) => a.turi_kirish?.toLowerCase() === 'kelmagan' || a.status_kirish === false && !isLate(a)
+    const isPresent = (a: any) => !isLate(a) && !isAbsent(a) && (a.status_kirish === true || a.is_success === true || a.turi_kirish?.toLowerCase() === 'ishda' || a.turi_kirish?.toLowerCase() === 'vaqtida')
+
+    const onTimeCount = safeAttendances.filter(isPresent).length
+    const lateCount = safeAttendances.filter(isLate).length
+    const absentCount = safeAttendances.filter(isAbsent).length
 
     const workerMap = new Map(workers?.map(w => [w.id, w]) || [])
     const getAttendanceGroup = (attendance: any) => {
-        const worker: any = workerMap.get(attendance.user)
+        const userId = typeof attendance.user === 'object' && attendance.user !== null ? attendance.user.id : attendance.user
+        let worker: any = workerMap.get(userId)
+        
+        if (!worker && attendance.ism) {
+            worker = workers?.find(w => w.full_name?.toLowerCase() === attendance.ism?.toLowerCase() || w.first_name?.toLowerCase() === attendance.ism?.toLowerCase())
+        }
+        
+        // Agar xodim worker listidan topilmasa, lekin attendance ichida user obyekti bo'lsa
+        if (!worker && typeof attendance.user === 'object' && attendance.user !== null) {
+             const br = String(attendance.user.branch || '').toLowerCase();
+             if (br.includes('ichki')) return 'ichki'
+             if (br.includes('tashqi')) return 'tashqi'
+             if (br.includes('personal') || br.includes('manag') || br.includes('boss')) return 'personallar'
+             if (br.includes('buxg') || br.includes('admin')) return 'buxgalterlar'
+        }
+
         if (!worker) {
-            const id = attendance.user
-            if (id % 4 === 0) return 'ichki'
-            if (id % 4 === 1) return 'tashqi'
-            if (id % 4 === 2) return 'personallar'
-            return 'buxgalterlar'
+            return 'ichki' // Default fallback
         }
 
         // 1. Check department code or name
@@ -94,18 +110,18 @@ export default function DashboardPage() {
     const chartPersonal = charts.find(c => c.branch === 'personallar' || c.branch === 'personal')
     const chartBuxgalter = charts.find(c => c.branch === 'buxgalterlar' || c.branch === 'buxgalter')
 
-    const ichkiRate = chartIchki ? chartIchki.percentage : (ichkiAttendances.length > 0
-        ? Math.round((ichkiAttendances.filter(a => a.status_kirish).length / ichkiAttendances.length) * 100)
-        : 85)
-    const tashqiRate = chartTashqi ? chartTashqi.percentage : (tashqiAttendances.length > 0
-        ? Math.round((tashqiAttendances.filter(a => a.status_kirish).length / tashqiAttendances.length) * 100)
-        : 70)
-    const personallarRate = chartPersonal ? chartPersonal.percentage : (personallarAttendances.length > 0
-        ? Math.round((personallarAttendances.filter(a => a.status_kirish).length / personallarAttendances.length) * 100)
-        : 92)
-    const buxgalterlarRate = chartBuxgalter ? chartBuxgalter.percentage : (buxgalterlarAttendances.length > 0
-        ? Math.round((buxgalterlarAttendances.filter(a => a.status_kirish).length / buxgalterlarAttendances.length) * 100)
-        : 98)
+    const ichkiRate = chartIchki?.rate || chartIchki?.percentage || chartIchki?.attendance_rate || (ichkiAttendances.length > 0
+        ? Math.round((ichkiAttendances.filter(a => a.status_kirish || a.is_success).length / ichkiAttendances.length) * 100)
+        : 0)
+    const tashqiRate = chartTashqi?.rate || chartTashqi?.percentage || chartTashqi?.attendance_rate || (tashqiAttendances.length > 0
+        ? Math.round((tashqiAttendances.filter(a => a.status_kirish || a.is_success).length / tashqiAttendances.length) * 100)
+        : 0)
+    const personallarRate = chartPersonal?.rate || chartPersonal?.percentage || chartPersonal?.attendance_rate || (personallarAttendances.length > 0
+        ? Math.round((personallarAttendances.filter(a => a.status_kirish || a.is_success).length / personallarAttendances.length) * 100)
+        : 0)
+    const buxgalterlarRate = chartBuxgalter?.rate || chartBuxgalter?.percentage || chartBuxgalter?.attendance_rate || (buxgalterlarAttendances.length > 0
+        ? Math.round((buxgalterlarAttendances.filter(a => a.status_kirish || a.is_success).length / buxgalterlarAttendances.length) * 100)
+        : 0)
 
     const modalEmployees = () => {
         switch (modal) {
@@ -113,9 +129,9 @@ export default function DashboardPage() {
             case 'tashqi-dokon': return tashqiAttendances
             case 'personallar': return personallarAttendances
             case 'buxgalterlar': return buxgalterlarAttendances
-            case 'kelganlar': return safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() !== 'kechikkan')
-            case 'kechikkanlar': return safeAttendances.filter(a => a.status_kirish && a.turi_kirish?.toLowerCase() === 'kechikkan')
-            case 'kelmaganlar': return safeAttendances.filter(a => !a.status_kirish)
+            case 'kelganlar': return safeAttendances.filter(isPresent)
+            case 'kechikkanlar': return safeAttendances.filter(isLate)
+            case 'kelmaganlar': return safeAttendances.filter(isAbsent)
             default: return []
         }
     }
@@ -144,7 +160,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga Kelganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{summary?.present?.count || onTimeCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{onTimeCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-emerald-600">
                             {(summary?.present?.trend_percentage ?? 18) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                             <span>{Math.abs(summary?.present?.trend_percentage ?? 18)}% o'tgan oyga nbt</span>
@@ -162,7 +178,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga kechikganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{summary?.late?.count || lateCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{lateCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-red-500">
                             {(summary?.late?.trend_percentage ?? 1) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                             <span>{Math.abs(summary?.late?.trend_percentage ?? 1)}% o'tgan oyga nbt</span>
@@ -180,7 +196,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Kelmaganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{summary?.absent?.count || absentCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{absentCount}</p>
                         {summary?.absent?.trend_percentage !== undefined && (
                             <div className="flex items-center gap-1 text-xs mt-0.5 text-gray-500">
                                 {summary.absent.trend_percentage >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
