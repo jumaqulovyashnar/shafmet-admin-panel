@@ -17,6 +17,7 @@ interface EmployeeModalProps {
   onClose: () => void
   type: DashboardModalType
   attendances: V1Attendance[] // Fallback if API fails
+  onWorkerClick?: (workerId: number) => void
 }
 
 const ITEMS_PER_PAGE = 50
@@ -69,7 +70,7 @@ const modalConfig: Record<
   },
 }
 
-export default function EmployeeModal({ open, onClose, type, attendances }: EmployeeModalProps) {
+export default function EmployeeModal({ open, onClose, type, attendances, onWorkerClick }: EmployeeModalProps) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [apiAttendances, setApiAttendances] = useState<any[]>([])
@@ -250,6 +251,19 @@ export default function EmployeeModal({ open, onClose, type, attendances }: Empl
                   return (
                     <tr
                       key={a.id || idx}
+                      onClick={() => {
+                        const userObj = a.user || a.worker || a;
+                        const userId = typeof userObj === 'object' && userObj !== null ? userObj.id || userObj.user_id || userObj.worker_id : userObj;
+                        let finalId = userId || a.user_id || a.worker_id;
+                        
+                        // Fallback by name if ID is completely missing
+                        if (!finalId && a.ism) {
+                          const matchedWorker = workers.find(w => w.full_name === a.ism);
+                          if (matchedWorker) finalId = matchedWorker.id;
+                        }
+
+                        if (finalId && onWorkerClick) onWorkerClick(Number(finalId));
+                      }}
                       className="border-b border-gray-50 h-12 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
                     >
                       <td className="py-1.5 px-2 text-center align-middle">

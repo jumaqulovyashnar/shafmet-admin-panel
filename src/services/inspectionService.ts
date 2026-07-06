@@ -28,6 +28,10 @@ export const inspectionService = {
     return apiClient.get<any[]>(API_ENDPOINTS.LAVOZIM)
   },
 
+  async createLavozim(data: { name: string; description?: string }): Promise<any> {
+    return apiClient.post<any>(API_ENDPOINTS.LAVOZIM, data)
+  },
+
   // Get current worker's own attendances (Faqat Worker)
   async getMyAttendances(params?: {
     page?: number
@@ -103,14 +107,24 @@ export const inspectionService = {
 
       const coreMap = new Map<string, any>(coreList.map((w: any) => [String(w.id), w]))
 
-      // Merge: prioritize core worker photos (since they are uploaded via multipart), keep V1 fields
+      // Merge: V1 dan asosiy ma'lumotlar, Core dan photo va department olinadi
+      // V1 API da `department` maydoni YO'Q (faqat `branch` bor)
+      // Core API da `department` obyekt sifatida keladi: { id, name, slug, ... }
       const mergedList = v1List.map((v1Worker: any) => {
         const coreWorker = coreMap.get(String(v1Worker.id))
+        
+        // Core API ning department obyektini department_detail sifatida ishlatamiz
+        const coreDept = coreWorker?.department
+        const deptDetail = typeof coreDept === 'object' && coreDept !== null ? coreDept : undefined
+        
         return {
           ...v1Worker,
           photo: coreWorker?.photo || v1Worker.avatar || v1Worker.photo,
           photo_url: coreWorker?.photo_url || coreWorker?.photo || v1Worker.avatar,
           has_face_profile: coreWorker?.has_face_profile,
+          // Core API dan department ma'lumotlarini olib qo'shish
+          department: v1Worker.department || coreWorker?.department,
+          department_detail: v1Worker.department_detail || coreWorker?.department_detail || deptDetail,
         }
       })
 
@@ -151,7 +165,6 @@ export const inspectionService = {
     password: string
     photo: File
     department: number
-    branch: string
   }): Promise<any> {
     // 1. Xodimni yaratish (rasmsiz) - backend formData talab qiladi (415 error fix)
     const createData = new FormData()
@@ -159,7 +172,6 @@ export const inspectionService = {
     createData.append('full_name', data.full_name)
     createData.append('password', data.password)
     createData.append('department', data.department.toString())
-    createData.append('branch', data.branch)
     
     const createdWorker = await apiClient.post<any>(API_ENDPOINTS.EMPLOYEES_V1, createData)
 
@@ -170,7 +182,30 @@ export const inspectionService = {
     // 2. Yuz rasmini yuklash (Face ID integratsiyasi)
     const photoData = new FormData()
     photoData.append('photo', data.photo)
-    return apiClient.post<any>(API_ENDPOINTS.EMPLOYEE_V1_UPLOAD_FACE(createdWorker.id), photoData)
+    const photoResult = await apiClient.post<any>(API_ENDPOINTS.EMPLOYEE_V1_UPLOAD_FACE(createdWorker.id), photoData)
+    
+    // 3. Department ni Core API orqali yangilash
+    // V1 API department maydonini e'tiborsiz qoldiradi va har doim "ichki_dokon" ga qo'shadi
+    // Shuning uchun Core API (PATCH /api/inspection/workers/{id}/) orqali to'g'ri department ni o'rnatamiz
+    try {
+      await apiClient.patch(API_ENDPOINTS.WORKER_BY_ID(createdWorker.id), {
+        department: data.department
+      })
+    } catch (e) {
+      //
+    }
+
+    // 4. Mobile app qotib qolmasligi uchun balance va salary ni aniq raqam (0) qilib patch qilamiz.
+    try {
+      await apiClient.patch(API_ENDPOINTS.EMPLOYEE_V1_BY_ID(createdWorker.id), {
+        balance: 0,
+        salary: 0
+      }, { _silent404: true } as any)
+    } catch (e) {
+      // Bu ixtiyoriy qadamdir — 404 bo'lsa ham xodim yaratilgan
+    }
+    
+    return photoResult;
   },
 
   async getWorkerProfile(id: number): Promise<any> {

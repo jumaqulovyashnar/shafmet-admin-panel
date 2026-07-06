@@ -11,6 +11,7 @@ interface AddEmployeeModalProps {
   open: boolean
   onClose: () => void
   defaultLocation?: string
+  defaultDepartmentId?: number
 }
 
 // Note: Departments are fetched from the API now instead of hardcoding.
@@ -25,7 +26,7 @@ const INITIAL_FORM = {
 }
 
 // ---------- Component ----------
-export default function AddEmployeeModal({ open, onClose, defaultLocation }: AddEmployeeModalProps) {
+export default function AddEmployeeModal({ open, onClose, defaultLocation, defaultDepartmentId }: AddEmployeeModalProps) {
   // Photo state — keep both the File (for upload) and preview URL (for display)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -43,21 +44,38 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
 
   const set = (k: string, v: string | number) => setForm((f) => ({ ...f, [k]: v }))
 
-  // Load departments from API
+  // Load departments from API (re-fetch every time modal opens)
   useEffect(() => {
-    inspectionService.getLavozimlar().then((data) => {
-      setDepartments(data)
-    }).catch(err => console.error("Error loading lavozimlar:", err))
-  }, [])
+    if (open) {
+      inspectionService.getLavozimlar().then((data) => {
+        setDepartments(data)
+      }).catch(err => console.error("Error loading lavozimlar:", err))
+    }
+  }, [open])
 
   // Sync default location when modal opens or departments load
   useEffect(() => {
     if (open && departments.length > 0) {
-      const foundDept = departments.find((d) => d.name === defaultLocation)
-      const deptId = foundDept ? foundDept.id : departments[0].id
-      setForm(f => ({ ...f, departmentId: deptId }))
+      // 1-prioritet: aniq department ID berilgan bo'lsa — uni ishlatish
+      if (defaultDepartmentId) {
+        const found = departments.find((d) => d.id === defaultDepartmentId)
+        if (found) {
+          setForm(f => ({ ...f, departmentId: found.id }))
+          return
+        }
+      }
+      // 2-prioritet: defaultLocation (string label) bo'yicha topish
+      if (defaultLocation) {
+        const foundDept = departments.find((d) => d.name === defaultLocation)
+        if (foundDept) {
+          setForm(f => ({ ...f, departmentId: foundDept.id }))
+          return
+        }
+      }
+      // 3-prioritet: birinchi department ni tanlash
+      setForm(f => ({ ...f, departmentId: departments[0].id }))
     }
-  }, [open, defaultLocation, departments])
+  }, [open, defaultLocation, defaultDepartmentId, departments])
 
   // ---- Photo handling ----
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,15 +124,12 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation }: Add
     const loadId = toast.loading("Xodim yaratilmoqda...")
 
     try {
-      const selectedDept = departments.find(d => d.id === form.departmentId)
-      
       await inspectionService.createWorkerWithPhoto({
         full_name: form.name.trim(),
         phone: form.phone.trim(),
         password: form.password,
         photo: photoFile,
         department: form.departmentId,
-        branch: selectedDept?.slug || 'ichki_dokon',
       })
 
       toast.dismiss(loadId)

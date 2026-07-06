@@ -16,7 +16,7 @@ export default function DashboardPage() {
     const [summary, setSummary] = useState<any>(null)
     const [charts, setCharts] = useState<any[]>([])
     
-    const { attendances, loading, totalCount, page, totalPages, setPage, search, setSearch, filter, setFilter, refetch: refetchAttendances } = useAttendances(100)
+    const { attendances, loading, page, totalPages, setPage, search, setSearch, filter, setFilter, refetch: refetchAttendances } = useAttendances(100)
     const { workers } = useWorkers()
 
     useEffect(() => {

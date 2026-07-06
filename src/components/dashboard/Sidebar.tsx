@@ -25,7 +25,12 @@ const navItems: NavItem[] = [
   { label: "Maxsus Bo'lim", icon: <img src={icons.support} alt="" className="w-5 h-5 object-contain" />, href: '/departments' },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  isMobileOpen?: boolean;
+  setIsMobileOpen?: (open: boolean) => void;
+}
+
+export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
@@ -40,10 +45,20 @@ export default function Sidebar() {
 
   return (
     <>
+    {/* Mobile Overlay */}
+    {isMobileOpen && (
+      <div 
+        className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+        onClick={() => setIsMobileOpen?.(false)}
+      />
+    )}
+
     <aside
       className={cn(
-        'bg-white border-r border-gray-100 flex flex-col h-full shrink-0 transition-all duration-300 relative z-40',
-        collapsed ? 'w-[68px]' : 'w-56'
+        'bg-white border-r border-gray-100 flex flex-col h-full shrink-0 transition-all duration-300 relative z-50',
+        'fixed md:static inset-y-0 left-0 shadow-2xl md:shadow-none',
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+        collapsed ? 'w-[68px]' : 'w-64'
       )}
     >
       {/* Logo + collapse toggle */}

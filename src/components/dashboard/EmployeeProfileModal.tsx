@@ -197,8 +197,8 @@ export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate
                 full_name: formData.full_name,
                 phone: formData.phone,
                 branch: formData.branch,
-                salary: formData.salary,
-                balance: formData.balance,
+                salary: Number(formData.salary),
+                balance: Number(formData.balance),
                 is_active: formData.is_active,
             }
             if (formData.password) {

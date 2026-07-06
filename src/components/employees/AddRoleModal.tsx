@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { inspectionService } from '@/services/inspectionService'
 
 interface AddRoleModalProps {
     open: boolean
@@ -15,15 +18,40 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
         principle: '',
         showInDiagram: false,
     })
+    const [submitting, setSubmitting] = useState(false)
 
     const set = (k: string, v: string | boolean) =>
         setForm((f) => ({ ...f, [k]: v }))
 
-    const handleCreate = () => {
-        if (!form.title.trim()) return
-        onAdd({ ...form })
-        onClose()
-        setForm({ title: '', principle: '', showInDiagram: false })
+    const handleCreate = async () => {
+        if (!form.title.trim()) {
+            toast.error("Lavozim nomini kiriting")
+            return
+        }
+
+        setSubmitting(true)
+        const loadId = toast.loading("Lavozim yaratilmoqda...")
+
+        try {
+            await inspectionService.createLavozim({
+                name: form.title.trim(),
+                description: form.principle.trim() || undefined,
+            })
+
+            toast.dismiss(loadId)
+            toast.success("Lavozim muvaffaqiyatli yaratildi!")
+
+            onAdd({ ...form })
+            onClose()
+            setForm({ title: '', principle: '', showInDiagram: false })
+        } catch (err: any) {
+            toast.dismiss(loadId)
+            const msg = err?.message || "Lavozim yaratishda xatolik yuz berdi"
+            toast.error(msg)
+            console.error('[AddRoleModal] create error:', err)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     return (
@@ -84,9 +112,11 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
                     <div className="flex justify-end pt-1">
                         <Button
                             onClick={handleCreate}
-                            className="bg-[#64b5f6] hover:bg-[#42a5f5] h-10 px-8 rounded-xl text-[13px] font-semibold"
+                            disabled={submitting}
+                            className="bg-[#64b5f6] hover:bg-[#42a5f5] h-10 px-8 rounded-xl text-[13px] font-semibold gap-2"
                         >
-                            Yaratish
+                            {submitting && <Loader2 size={14} className="animate-spin" />}
+                            {submitting ? 'Yaratilmoqda...' : 'Yaratish'}
                         </Button>
                     </div>
                 </div>

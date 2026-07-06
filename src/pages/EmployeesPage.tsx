@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { SlidersHorizontal, Search, ChevronDown, Folder, Store, Users, Pencil, Trash2, UserPlus, ShieldPlus, Loader2 } from 'lucide-react'
+import { SlidersHorizontal, Search, Folder, Store, Users, Pencil, Trash2, ShieldPlus, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/ui/pagination'
 import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import AddRoleModal from '@/components/employees/AddRoleModal'
 import EditDepartmentModal from '@/components/employees/EditDepartmentModal'
 import DeleteDepartmentModal from '@/components/employees/DeleteDepartmentModal'
+import FolderActionButtons from '@/components/employees/FolderActionButtons'
 import EmployeeProfileModal from '@/components/dashboard/EmployeeProfileModal'
 import { getAbsoluteImageUrl } from '@/lib/api-base-url'
 import { useWorkers } from '@/hooks/useWorkers'
 import type { Worker } from '@/types/inspection'
+import { toast } from 'sonner'
+import { inspectionService } from '@/services/inspectionService'
 
 /* ---- Department folder config ---- */
 interface DeptFolder {
@@ -43,17 +46,14 @@ import { useLavozimlar, type Lavozim } from '@/hooks/useLavozimlar'
 /* ---- Build folders from Lavozimlar data ---- */
 function buildFoldersFromLavozimlar(lavozimlar: Lavozim[], workers: Worker[]): DeptFolder[] {
     const folders: DeptFolder[] = lavozimlar.map((lavozim, idx) => {
-        // Find workers for this branch/department
-        const count = workers.filter(w => 
-            w.branch === lavozim.slug || 
-            w.department_detail?.slug === lavozim.slug ||
-            w.department_detail?.id === lavozim.id
-        ).length
+        const matchedWorkers = workers.filter(w => {
+            return workerMatchesLavozim(w, lavozim)
+        })
 
         return {
-            key: lavozim.slug,
+            key: String(lavozim.id),
             label: lavozim.name,
-            count: count,
+            count: matchedWorkers.length,
             icon: <Store size={28} />,
             bgColor: folderBgColors[idx % folderBgColors.length],
             iconColor: folderColors[idx % folderColors.length]
@@ -73,20 +73,51 @@ function buildFoldersFromLavozimlar(lavozimlar: Lavozim[], workers: Worker[]): D
     return folders
 }
 
+/**
+ * Worker ning lavozim ga tegishli ekanligini aniqlash.
+ * Birinchi navbatda department (ID) bo'yicha tekshiradi,
+ * agar department yo'q bo'lsa branch (slug) bo'yicha fallback qiladi.
+ */
+function workerMatchesLavozim(w: Worker, lavozim: Lavozim): boolean {
+    // 1. department_detail (aniq ma'lumot) bo'yicha tekshir
+    if (w.department_detail) {
+        return w.department_detail.id === lavozim.id || w.department_detail.slug === lavozim.slug
+    }
+
+    // 2. department (raqam yoki obyekt) bo'yicha tekshir
+    if (w.department !== undefined && w.department !== null) {
+        const deptId = typeof w.department === 'object' && w.department !== null
+            ? Number((w.department as any).id)
+            : Number(w.department)
+        if (!isNaN(deptId) && deptId > 0) {
+            return deptId === lavozim.id
+        }
+    }
+
+    // 3. Faqat department yo'q bo'lsa, branch (slug) bo'yicha fallback
+    if (w.branch) {
+        return w.branch === lavozim.slug
+    }
+
+    return false
+}
+
 /* ---- Folder list view ---- */
 function FolderList({
     folders,
     onSelect,
     onEdit,
     onDelete,
+    onAddEmployee,
 }: {
     folders: DeptFolder[]
     onSelect: (key: string) => void
     onEdit?: (key: string) => void
     onDelete?: (key: string) => void
+    onAddEmployee?: (key: string) => void
 }) {
     return (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {folders.map((d, idx) => (
                 <div
                     key={d.key}
@@ -114,22 +145,12 @@ function FolderList({
                     </button>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-                        <button
-                            onClick={() => onEdit?.(d.key)}
-                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-                        >
-                            <Pencil size={14} />
-                            Tahrirlash
-                        </button>
-                        <button
-                            onClick={() => onDelete?.(d.key)}
-                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                        >
-                            <Trash2 size={14} />
-                            O'chirish
-                        </button>
-                    </div>
+                    <FolderActionButtons 
+                        departmentKey={d.key} 
+                        onAddEmployee={onAddEmployee} 
+                        onEdit={onEdit} 
+                        onDelete={onDelete} 
+                    />
                 </div>
             ))}
         </div>
@@ -137,7 +158,7 @@ function FolderList({
 }
 
 /* ---- Worker table view (real API data) ---- */
-function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerClick?: (id: number) => void }) {
+function WorkerTable({ workers, onWorkerClick, onDeleteWorker, title = 'Barcha Hodimlar' }: { workers: Worker[]; onWorkerClick?: (id: number) => void; onDeleteWorker?: (id: number) => void; title?: string }) {
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
 
@@ -173,7 +194,7 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
             {/* Table header */}
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h3 className="text-[17px] font-bold text-gray-900">Barcha Hodimlar</h3>
+                    <h3 className="text-[17px] font-bold text-gray-900">{title}</h3>
                     <p className="text-[12px] text-blue-500 font-medium mt-0.5">{filtered.length} ta hodim</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -190,7 +211,8 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
             </div>
 
             {/* Table */}
-            <table className="w-full">
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px]">
                 <thead>
                     <tr className="border-b border-gray-100">
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Ism Familiyasi</th>
@@ -199,7 +221,7 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Holati</th>
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Yuz Profili</th>
                         <th className="text-left py-2 px-3 text-[11px] font-medium text-gray-400">Qo'shilgan</th>
-                        <th className="text-center py-2 px-3 text-[11px] font-medium text-gray-400">Tahrirlash</th>
+                        <th className="text-center py-2 px-3 text-[11px] font-medium text-gray-400">Amallar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -209,7 +231,7 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
                             onClick={() => onWorkerClick?.(worker.id)}
                             className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
                         >
-                            <td className="py-3 px-3">
+                            <td className="py-4 px-4">
                                 <div className="flex items-center gap-3">
                                     {worker.photo_url || worker.photo || worker.avatar ? (
                                         <img
@@ -225,8 +247,8 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
                                     <span className="text-[13px] font-semibold text-gray-800">{worker.full_name}</span>
                                 </div>
                             </td>
-                            <td className="py-3 px-3 text-[12px] text-gray-500">{worker.phone}</td>
-                            <td className="py-3 px-3">
+                            <td className="py-4 px-4 text-[12px] text-gray-500">{worker.phone}</td>
+                            <td className="py-4 px-4">
                                 <div className="flex flex-col items-start gap-1.5">
                                     {(worker.department_detail?.name || worker.branch) && (
                                         <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
@@ -236,34 +258,47 @@ function WorkerTable({ workers, onWorkerClick }: { workers: Worker[]; onWorkerCl
                                     {worker.role && getRoleBadge(worker.role)}
                                 </div>
                             </td>
-                            <td className="py-3 px-3">
+                            <td className="py-4 px-4">
                                 <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${worker.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                     }`}>
                                     {worker.is_active ? 'Faol' : 'Nofaol'}
                                 </span>
                             </td>
-                            <td className="py-3 px-3 text-[12px] text-gray-500">
+                            <td className="py-4 px-4 text-[12px] text-gray-500">
                                 {worker.has_face_profile ? '✅ Bor' : '❌ Yo\'q'}
                             </td>
-                            <td className="py-3 px-3 text-[12px] text-gray-400">
+                            <td className="py-4 px-4 text-[12px] text-gray-400">
                                 {new Date(worker.created_at).toLocaleDateString('uz-UZ')}
                             </td>
-                            <td className="py-3 px-3 text-center">
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        onWorkerClick?.(worker.id)
-                                    }}
-                                    className="inline-flex items-center justify-center p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                                    title="Tahrirlash"
-                                >
-                                    <Pencil size={14} />
-                                </button>
+                            <td className="py-4 px-4 text-center">
+                                <div className="flex items-center justify-center gap-4">
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            onWorkerClick?.(worker.id)
+                                        }}
+                                        className="inline-flex items-center justify-center p-2.5 text-blue-500 border border-blue-200 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                        title="Tahrirlash"
+                                    >
+                                        <Pencil size={15} />
+                                    </button>
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            onDeleteWorker?.(worker.id)
+                                        }}
+                                        className="inline-flex items-center justify-center p-2.5 text-red-500 border border-red-200 hover:border-red-300 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="O'chirish"
+                                    >
+                                        <Trash2 size={15} />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+            </div>
 
             <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </div>
@@ -293,29 +328,24 @@ export default function EmployeesPage() {
     const { dept } = useParams<{ dept?: string }>()
     const navigate = useNavigate()
     const { workers, loading, refetch } = useWorkers()
-    const { lavozimlar, loading: lavozimLoading } = useLavozimlar()
+    const { lavozimlar, loading: lavozimLoading, refetch: refetchLavozimlar } = useLavozimlar()
     const isPageLoading = loading || lavozimLoading
     const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null)
     const [customFolders, setCustomFolders] = useState<DeptFolder[]>(loadCustomFolders)
     const [showAddEmployee, setShowAddEmployee] = useState(false)
+    const [addEmployeeDeptId, setAddEmployeeDeptId] = useState<number | null>(null)
     const [showAddRole, setShowAddRole] = useState(false)
     const [editDepartment, setEditDepartment] = useState<DeptFolder | null>(null)
     const [deleteDepartment, setDeleteDepartment] = useState<DeptFolder | null>(null)
-    const [accordionOpen, setAccordionOpen] = useState(false)
+
 
     // API dan olingan workers asosida folderlarni build qilish
     const apiFolders = buildFoldersFromLavozimlar(lavozimlar, workers)
     const allFolders = [...apiFolders, ...customFolders]
 
-    // Yangi lavozim qo'shilganda
-    const handleAddRole = (role: { title: string; principle: string; showInDiagram: boolean }) => {
-        const key = `role_${Date.now()}`
-        const updated = [
-            ...customFolders,
-            { key, label: role.title, count: 0, isCustomRole: true },
-        ]
-        setCustomFolders(updated)
-        saveCustomFolders(updated)
+    // Yangi lavozim qo'shilganda — API orqali yaratilgani uchun lavozimlarni qayta yuklash
+    const handleAddRole = (_role: { title: string; principle: string; showInDiagram: boolean }) => {
+        refetchLavozimlar()
         if (dept) navigate('/employees')
     }
 
@@ -341,15 +371,35 @@ export default function EmployeesPage() {
         saveCustomFolders(updated)
     }
 
-    // Bo'lim tanlanganda — workerlarni lavozim (dept slug) bo'yicha filtr qilish
+    const handleDeleteWorker = async (id: number) => {
+        if (!window.confirm("Rostdan ham bu xodimni o'chirmoqchimisiz?")) return;
+        try {
+            await inspectionService.deleteWorker(id)
+            toast.success("Xodim muvaffaqiyatli o'chirildi")
+            refetch()
+        } catch (error) {
+            toast.error("Xodimni o'chirishda xatolik yuz berdi")
+        }
+    }
+
+    // Bo'lim tanlanganda — workerlarni lavozim bo'yicha filtr qilish
+    // dept param = lavozim ID (masalan "1", "5") — shuning uchun lavozim slug ni ham topib, branch bilan solishtirish kerak
+    const currentLavozim = dept && dept !== 'all' ? lavozimlar.find(l => String(l.id) === dept) : null
+    
     const selectedWorkers = dept === 'all' 
         ? workers 
         : dept 
-            ? workers.filter(w => 
-                w.branch === dept || 
-                w.department_detail?.slug === dept || 
-                w.department_detail?.id.toString() === dept
-              ) 
+            ? workers.filter(w => {
+                if (currentLavozim) {
+                    return workerMatchesLavozim(w, currentLavozim)
+                }
+                // Agar lavozim topilmasa — eski logika (fallback)
+                const deptId = typeof w.department === 'object' && w.department !== null
+                    ? Number((w.department as any).id)
+                    : Number(w.department)
+                const deptNum = Number(dept)
+                return deptId === deptNum
+              }) 
             : []
 
     return (
@@ -357,36 +407,13 @@ export default function EmployeesPage() {
             {/* Top bar */}
             <div className="flex items-center justify-between">
                 <div className="w-48">
-                    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-                        <button
-                            onClick={() => setAccordionOpen(!accordionOpen)}
-                            className="w-full flex items-center justify-between bg-[#64b5f6] hover:bg-[#42a5f5] text-white px-3 py-2 text-[13px] font-semibold transition-colors"
-                        >
-                            <span>Yangi Qo'shish</span>
-                            <ChevronDown
-                                size={14}
-                                className={`transition-transform duration-200 ${accordionOpen ? 'rotate-180' : ''}`}
-                            />
-                        </button>
-                        {accordionOpen && (
-                            <div className="p-2 bg-white">
-                                <button
-                                    onClick={() => { setShowAddEmployee(true); setAccordionOpen(false) }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-700 hover:bg-blue-50 rounded-lg transition-colors font-medium mb-1"
-                                >
-                                    <UserPlus size={16} className="text-blue-600" />
-                                    <span>Yangi xodim</span>
-                                </button>
-                                <button
-                                    onClick={() => { setShowAddRole(true); setAccordionOpen(false) }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-700 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-                                >
-                                    <ShieldPlus size={16} className="text-blue-600" />
-                                    <span>Lavozim yaratish</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    <button
+                        onClick={() => setShowAddRole(true)}
+                        className="w-full flex items-center justify-center gap-2 bg-[#64b5f6] hover:bg-[#42a5f5] text-white px-4 py-2.5 text-[13px] font-semibold transition-colors rounded-xl shadow-sm"
+                    >
+                        <ShieldPlus size={16} />
+                        <span>Lavozim yaratish</span>
+                    </button>
                 </div>
 
                 <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
@@ -406,16 +433,26 @@ export default function EmployeesPage() {
                     onSelect={(key) => navigate(`/employees/${key}`)}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onAddEmployee={(key) => {
+                        setAddEmployeeDeptId(Number(key))
+                        setShowAddEmployee(true)
+                    }}
                 />
             ) : (
-                <WorkerTable workers={selectedWorkers} onWorkerClick={setSelectedWorkerId} />
+                <WorkerTable 
+                    title={currentLavozim ? currentLavozim.name : 'Barcha Xodimlar'}
+                    workers={selectedWorkers} 
+                    onWorkerClick={setSelectedWorkerId} 
+                    onDeleteWorker={handleDeleteWorker} 
+                />
             )}
 
             {/* Modals */}
             <AddEmployeeModal
                 open={showAddEmployee}
-                onClose={() => { setShowAddEmployee(false); refetch() }}
+                onClose={() => { setShowAddEmployee(false); setAddEmployeeDeptId(null); refetch() }}
                 defaultLocation={dept ? allFolders.find(f => f.key === dept)?.label : undefined}
+                defaultDepartmentId={addEmployeeDeptId ?? (dept ? Number(dept) : undefined)}
             />
             <AddRoleModal
                 open={showAddRole}

@@ -37,8 +37,6 @@ export function useAttendances(pageSize: number = 50): UseAttendancesReturn {
                 page_size: pageSize,
                 search: search || undefined,
             })
-            console.log("=== DAVOMAT TARIXI DATASI ===", res)
-
             if (res && res.results && Array.isArray(res.results)) {
                 setAttendances(res.results)
                 setTotalCount(res.count)
