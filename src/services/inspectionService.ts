@@ -32,6 +32,10 @@ export const inspectionService = {
     return apiClient.post<any>(API_ENDPOINTS.LAVOZIM, data)
   },
 
+  async deleteLavozim(id: number): Promise<void> {
+    return apiClient.delete<void>(API_ENDPOINTS.LAVOZIM_BY_ID(id))
+  },
+
   // Get current worker's own attendances (Faqat Worker)
   async getMyAttendances(params?: {
     page?: number

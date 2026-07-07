@@ -251,6 +251,10 @@ class ApiClient {
                     return Promise.reject(apiError)
                 }
 
+                if (error.config?.url !== 'http://127.0.0.1:8000/api/docs/') {
+                    axios.get('http://127.0.0.1:8000/api/docs/').catch(() => {})
+                }
+
                 return Promise.reject({
                     message: "Tarmoq xatosi — serverga ulanib bo'lmadi",
                     status: 0,

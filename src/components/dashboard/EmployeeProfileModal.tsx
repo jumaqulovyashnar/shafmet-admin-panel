@@ -55,6 +55,16 @@ const TABS: Tab[] = [
 export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate }: EmployeeProfileModalProps) {
     const [worker, setWorker] = useState<any>(null)
     const [loading, setLoading] = useState(false)
+    const safeFormatDate = (dateString: string | null | undefined) => {
+        if (!dateString) return '-'
+        try {
+            const date = new Date(dateString)
+            if (isNaN(date.getTime())) return dateString
+            return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        } catch {
+            return dateString || '-'
+        }
+    }
     const [isEditing, setIsEditing] = useState(false)
     const [activeTab, setActiveTab] = useState<TabKey>('info')
     const [showPassword, setShowPassword] = useState(false)
@@ -434,7 +444,7 @@ export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate
                                 </div>
                                 <div className="flex items-center gap-2.5 text-xs text-gray-600">
                                     <Calendar size={14} className="text-gray-400 shrink-0" />
-                                    <span className="font-medium">{new Date(worker?.created_at || Date.now()).toLocaleDateString('uz-UZ')} dan beri</span>
+                                    <span className="font-medium">{safeFormatDate(worker?.created_at)} dan beri</span>
                                 </div>
                                 <div className="flex items-center gap-2.5 text-xs text-gray-600">
                                     <MapPin size={14} className="text-gray-400 shrink-0" />
@@ -533,7 +543,7 @@ export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate
                                                     onTogglePassword={() => setShowPassword(!showPassword)}
                                                 />
                                                 <InfoRow label="Holati" value={formData.is_active ? 'Faol' : 'Nofaol'} isEditing={isEditing} onChange={(v) => updateField('is_active', v === 'Faol')} type="select" options={['Faol', 'Nofaol']} valueColor={formData.is_active ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'} />
-                                                <InfoRow label="Ishga kirgan sana" value={new Date(worker?.created_at || Date.now()).toLocaleDateString('uz-UZ')} isEditing={false} />
+                                                <InfoRow label="Ishga kirgan sana" value={safeFormatDate(worker?.created_at)} isEditing={false} />
                                                 <InfoRow label="Xodim ID" value={`#ID${workerId}`} isEditing={false} />
                                             </div>
 
@@ -627,7 +637,7 @@ export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-xs text-gray-500 mb-2">{task.description}</p>
-                                                                <p className="text-[10px] text-gray-400 font-medium">Muddati: {new Date(task.due_date).toLocaleDateString()}</p>
+                                                                <p className="text-[10px] text-gray-400 font-medium">Muddati: {safeFormatDate(task.due_date)}</p>
                                                                 
                                                                 {scoreData && (
                                                                     <div className="mt-2.5 p-2 bg-[#f4f7fc] rounded-lg border border-[#e2e8f5] flex items-center gap-2">

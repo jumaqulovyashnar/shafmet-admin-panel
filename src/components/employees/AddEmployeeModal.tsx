@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Camera, Clock, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Camera, Loader2, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { inspectionService } from '@/services/inspectionService'
 
@@ -21,8 +21,6 @@ const INITIAL_FORM = {
   phone: '',
   password: '',
   departmentId: 1,
-  startTime: '09:00',
-  endTime: '18:00',
 }
 
 // ---------- Component ----------
@@ -228,51 +226,7 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation, defau
               />
             </div>
 
-            {/* ---- Work hours ---- */}
-            <style>{`
-              .custom-time-input::-webkit-calendar-picker-indicator {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100%;
-                height: 100%;
-                opacity: 0;
-                cursor: pointer;
-              }
-            `}</style>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">
-                  Ishga kelish vaqti
-                </label>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    className="custom-time-input h-11 text-[13px] rounded-xl border-gray-200 pr-10 focus-visible:ring-1 focus-visible:ring-[#64b5f6] select-none cursor-pointer"
-                    value={form.startTime}
-                    onChange={(e) => set('startTime', e.target.value)}
-                  />
-                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
-                </div>
-              </div>
-              <div>
-                <label className="text-[12px] text-gray-500 mb-1.5 block font-medium">
-                  Ishdan ketish vaqti
-                </label>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    className="custom-time-input h-11 text-[13px] rounded-xl border-gray-200 pr-10 focus-visible:ring-1 focus-visible:ring-[#64b5f6] select-none cursor-pointer"
-                    value={form.endTime}
-                    onChange={(e) => set('endTime', e.target.value)}
-                  />
-                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
-                </div>
-              </div>
-            </div>
 
             {/* ---- Department select ---- */}
             <div>

@@ -8,7 +8,9 @@ export interface Lavozim {
   slug: string
   code?: string
   description?: string
+  is_default?: boolean
 }
+
 
 export function useLavozimlar() {
   const [lavozimlar, setLavozimlar] = useState<Lavozim[]>([])

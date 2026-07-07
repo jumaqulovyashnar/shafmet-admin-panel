@@ -24,7 +24,9 @@ interface DeptFolder {
     icon?: React.ReactNode
     bgColor?: string
     iconColor?: string
+    isDefault?: boolean
 }
+
 
 // Folder icon color — static va custom rollarga
 const folderColors = [
@@ -56,7 +58,8 @@ function buildFoldersFromLavozimlar(lavozimlar: Lavozim[], workers: Worker[]): D
             count: matchedWorkers.length,
             icon: <Store size={28} />,
             bgColor: folderBgColors[idx % folderBgColors.length],
-            iconColor: folderColors[idx % folderColors.length]
+            iconColor: folderColors[idx % folderColors.length],
+            isDefault: lavozim.is_default || false
         }
     })
 
@@ -67,11 +70,13 @@ function buildFoldersFromLavozimlar(lavozimlar: Lavozim[], workers: Worker[]): D
         count: workers.length,
         icon: <Users size={28} />,
         bgColor: 'bg-gray-100',
-        iconColor: 'text-gray-500'
+        iconColor: 'text-gray-500',
+        isDefault: true
     })
 
     return folders
 }
+
 
 /**
  * Worker ning lavozim ga tegishli ekanligini aniqlash.
@@ -147,6 +152,7 @@ function FolderList({
                     {/* Action Buttons */}
                     <FolderActionButtons 
                         departmentKey={d.key} 
+                        isDefault={d.isDefault}
                         onAddEmployee={onAddEmployee} 
                         onEdit={onEdit} 
                         onDelete={onDelete} 
@@ -268,7 +274,7 @@ function WorkerTable({ workers, onWorkerClick, onDeleteWorker, title = 'Barcha H
                                 {worker.has_face_profile ? '✅ Bor' : '❌ Yo\'q'}
                             </td>
                             <td className="py-4 px-4 text-[12px] text-gray-400">
-                                {new Date(worker.created_at).toLocaleDateString('uz-UZ')}
+                                {worker.created_at ? (() => { const d = new Date(worker.created_at); return isNaN(d.getTime()) ? worker.created_at : d.toLocaleDateString('uz-UZ') })() : '-'}
                             </td>
                             <td className="py-4 px-4 text-center">
                                 <div className="flex items-center justify-center gap-4">
@@ -365,11 +371,32 @@ export default function EmployeesPage() {
         saveCustomFolders(updated)
     }
 
-    const handleConfirmDelete = (key: string) => {
-        const updated = customFolders.filter((f) => f.key !== key)
-        setCustomFolders(updated)
-        saveCustomFolders(updated)
+    const handleConfirmDelete = async (key: string) => {
+        const isApiFolder = apiFolders.some((f) => f.key === key)
+        if (isApiFolder) {
+            try {
+                const lavozimId = parseInt(key, 10)
+                if (!isNaN(lavozimId)) {
+                    await inspectionService.deleteLavozim(lavozimId)
+                    toast.success("Lavozim muvaffaqiyatli o'chirildi")
+                    refetchLavozimlar()
+                    if (dept === key) {
+                        navigate('/employees')
+                    }
+                }
+            } catch (error: any) {
+                console.error("Lavozimni o'chirishda xatolik:", error)
+                const errorMsg = error?.response?.data?.error || error?.response?.data?.detail || "Lavozimni o'chirish imkoni bo'lmadi"
+                toast.error(errorMsg)
+            }
+        } else {
+            const updated = customFolders.filter((f) => f.key !== key)
+            setCustomFolders(updated)
+            saveCustomFolders(updated)
+            toast.success("Bo'lim muvaffaqiyatli o'chirildi")
+        }
     }
+
 
     const handleDeleteWorker = async (id: number) => {
         if (!window.confirm("Rostdan ham bu xodimni o'chirmoqchimisiz?")) return;

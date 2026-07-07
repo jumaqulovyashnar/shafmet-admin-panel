@@ -55,8 +55,10 @@ export default function EmployeesTable({
     }
 
     const formatDate = (timeString: string) => {
+        if (!timeString || timeString === 'null') return '-'
         try {
             const date = new Date(timeString)
+            if (isNaN(date.getTime())) return timeString
             return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
         } catch {
             return timeString
