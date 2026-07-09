@@ -365,10 +365,29 @@ export default function EmployeesPage() {
         if (department) setDeleteDepartment(department)
     }
 
-    const handleSaveEdit = (key: string, newLabel: string) => {
-        const updated = customFolders.map((f) => (f.key === key ? { ...f, label: newLabel } : f))
-        setCustomFolders(updated)
-        saveCustomFolders(updated)
+    const handleSaveEdit = async (key: string, newLabel: string) => {
+        const isApiFolder = apiFolders.some((f) => f.key === key)
+        if (isApiFolder) {
+            try {
+                const lavozimId = parseInt(key, 10)
+                if (!isNaN(lavozimId)) {
+                    const loadId = toast.loading("Lavozim nomi o'zgartirilmoqda...")
+                    await inspectionService.updateLavozim(lavozimId, { name: newLabel.trim() })
+                    toast.dismiss(loadId)
+                    toast.success("Lavozim nomi muvaffaqiyatli o'zgartirildi!")
+                    refetchLavozimlar()
+                }
+            } catch (error: any) {
+                toast.dismiss()
+                console.error("Lavozimni tahrirlashda xatolik:", error)
+                const errorMsg = error?.response?.data?.error || error?.response?.data?.detail || "Lavozim nomini o'zgartirib bo'lmadi"
+                toast.error(errorMsg)
+            }
+        } else {
+            const updated = customFolders.map((f) => (f.key === key ? { ...f, label: newLabel } : f))
+            setCustomFolders(updated)
+            saveCustomFolders(updated)
+        }
     }
 
     const handleConfirmDelete = async (key: string) => {
