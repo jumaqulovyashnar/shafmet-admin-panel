@@ -85,6 +85,93 @@ export default function EmployeeModal({ open, onClose, type, attendances, onWork
     const fetchData = async () => {
       setLoading(true)
       try {
+        if (type === 'kelmaganlar') {
+          const res = await inspectionService.getAbsentAttendances({
+            search: search || undefined,
+            page,
+            page_size: ITEMS_PER_PAGE
+          })
+          if (res) {
+            const results = res.results || res;
+            const mapped = results.map((worker: any) => ({
+              id: worker.id,
+              user: worker.id,
+              ism: worker.full_name,
+              rasm: worker.avatar || worker.photo,
+              sana: new Date().toISOString().split('T')[0],
+              kelgan_vaqt: null,
+              turi_kirish: "Kelmagan",
+              status_kirish: false,
+              is_late: false,
+              ketgan_vaqt: null,
+              turi_chiqish: null,
+              status_chiqish: null,
+              umumiy_soat: null,
+            }))
+            setApiAttendances(mapped)
+            setTotalCount(res.count || (Array.isArray(res) ? res.length : 0))
+          }
+          return
+        }
+
+        if (type === 'kelganlar') {
+          const res = await inspectionService.getPresentAttendances({
+            search: search || undefined,
+            page,
+            page_size: ITEMS_PER_PAGE
+          })
+          if (res) {
+            const results = res.results || res;
+            const mapped = results.map((att: any) => ({
+              id: att.id,
+              user: att.user?.id || att.worker?.id || att.worker,
+              ism: att.user?.full_name || att.worker?.full_name || att.ism,
+              rasm: att.user?.avatar || att.user?.photo || att.worker?.photo || att.rasm,
+              sana: att.created_at ? att.created_at.split('T')[0] : (att.date || ''),
+              kelgan_vaqt: att.created_at || att.check_in_time,
+              turi_kirish: att.is_late ? "Kechikkan" : "Ishda",
+              status_kirish: att.is_success ?? att.check_in_success,
+              is_late: att.is_late,
+              ketgan_vaqt: att.check_out_time,
+              turi_chiqish: att.check_out_time ? "Ketgan" : null,
+              status_chiqish: att.check_out_success,
+              umumiy_soat: att.total_hours,
+            }))
+            setApiAttendances(mapped)
+            setTotalCount(res.count || (Array.isArray(res) ? res.length : 0))
+          }
+          return
+        }
+
+        if (type === 'kechikkanlar') {
+          const res = await inspectionService.getLateAttendances({
+            search: search || undefined,
+            page,
+            page_size: ITEMS_PER_PAGE
+          })
+          if (res) {
+            const results = res.results || res;
+            const mapped = results.map((att: any) => ({
+              id: att.id,
+              user: att.user?.id || att.worker?.id || att.worker,
+              ism: att.user?.full_name || att.worker?.full_name || att.ism,
+              rasm: att.user?.avatar || att.user?.photo || att.worker?.photo || att.rasm,
+              sana: att.created_at ? att.created_at.split('T')[0] : (att.date || ''),
+              kelgan_vaqt: att.created_at || att.check_in_time,
+              turi_kirish: "Kechikkan",
+              status_kirish: att.is_success ?? att.check_in_success,
+              is_late: true,
+              ketgan_vaqt: att.check_out_time,
+              turi_chiqish: att.check_out_time ? "Ketgan" : null,
+              status_chiqish: att.check_out_success,
+              umumiy_soat: att.total_hours,
+            }))
+            setApiAttendances(mapped)
+            setTotalCount(res.count || (Array.isArray(res) ? res.length : 0))
+          }
+          return
+        }
+
         let localList = attendances;
         if (search) {
              const s = search.toLowerCase();

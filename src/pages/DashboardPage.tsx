@@ -160,7 +160,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga Kelganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{onTimeCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{summary?.present?.count ?? onTimeCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-emerald-600">
                             {(summary?.present?.trend_percentage ?? 18) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                             <span>{Math.abs(summary?.present?.trend_percentage ?? 18)}% o'tgan oyga nbt</span>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga kechikganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{lateCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{summary?.late?.count ?? lateCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-red-500">
                             {(summary?.late?.trend_percentage ?? 1) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                             <span>{Math.abs(summary?.late?.trend_percentage ?? 1)}% o'tgan oyga nbt</span>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Kelmaganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{absentCount}</p>
+                        <p className="text-2xl font-bold text-gray-900">{summary?.absent?.count ?? absentCount}</p>
                         {summary?.absent?.trend_percentage !== undefined && (
                             <div className="flex items-center gap-1 text-xs mt-0.5 text-gray-500">
                                 {summary.absent.trend_percentage >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
