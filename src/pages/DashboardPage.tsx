@@ -40,7 +40,7 @@ export default function DashboardPage() {
     
     const isLate = (a: any) => a.turi_kirish?.toLowerCase() === 'kechikkan' || a.turi_kirish?.toLowerCase() === 'kechikgan' || a.is_late === true
     const isAbsent = (a: any) => a.turi_kirish?.toLowerCase() === 'kelmagan' || a.status_kirish === false && !isLate(a)
-    const isPresent = (a: any) => !isLate(a) && !isAbsent(a) && (a.status_kirish === true || a.is_success === true || a.turi_kirish?.toLowerCase() === 'ishda' || a.turi_kirish?.toLowerCase() === 'vaqtida')
+    const isPresent = (a: any) => !isAbsent(a) && (a.status_kirish === true || a.is_success === true || a.turi_kirish?.toLowerCase() === 'ishda' || a.turi_kirish?.toLowerCase() === 'vaqtida' || isLate(a))
 
     const onTimeCount = safeAttendances.filter(isPresent).length
     const lateCount = safeAttendances.filter(isLate).length
