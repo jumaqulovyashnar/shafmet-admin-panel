@@ -247,6 +247,8 @@ export const inspectionService = {
       branch?: string
       start_date?: string
       end_date?: string
+      page?: number
+      page_size?: number
       search?: string
     },
     options?: { silent404?: boolean }
