@@ -8,6 +8,7 @@ import { images } from '@/api/constant/images'
 import type { ModalType } from '@/types/dashboard'
 import { useAttendances } from '@/hooks/useAttendances'
 import { useWorkers } from '@/hooks/useWorkers'
+import { useLavozimlar } from '@/hooks/useLavozimlar'
 import { inspectionService } from '@/services/inspectionService'
 
 export default function DashboardPage() {
@@ -18,6 +19,7 @@ export default function DashboardPage() {
     
     const { attendances, loading, page, totalPages, setPage, search, setSearch, filter, setFilter, refetch: refetchAttendances } = useAttendances(100)
     const { workers } = useWorkers()
+    const { lavozimlar } = useLavozimlar()
 
     useEffect(() => {
         const loadDashboardData = async () => {
@@ -57,93 +59,48 @@ export default function DashboardPage() {
         
         // Agar xodim worker listidan topilmasa, lekin attendance ichida user obyekti bo'lsa
         if (!worker && typeof attendance.user === 'object' && attendance.user !== null) {
-             const br = String(attendance.user.branch || '').toLowerCase();
-             if (br.includes('ichki')) return 'ichki'
-             if (br.includes('tashqi')) return 'tashqi'
-             if (br.includes('personal') || br.includes('manag') || br.includes('boss')) return 'personallar'
-             if (br.includes('buxg') || br.includes('admin')) return 'buxgalterlar'
+             return String(attendance.user.branch || '').toLowerCase();
         }
 
         if (!worker) {
-            return 'ichki' // Default fallback
+            return '';
         }
 
-        // 1. Check department code or name
-        if (worker.department) {
-            const code = String(worker.department.code || '').toLowerCase()
-            const id = Number(worker.department.id)
-            if (code.includes('ichki') || id === 1) return 'ichki'
-            if (code.includes('tashqi') || id === 2) return 'tashqi'
-            if (code.includes('personal') || code.includes('manag') || code.includes('boss') || id === 3) return 'personallar'
-            if (code.includes('buxg') || code.includes('admin') || id === 4) return 'buxgalterlar'
+        if (worker.department_detail?.slug) {
+            return String(worker.department_detail.slug).toLowerCase()
         }
         
-        // 2. Check branch field
         if (worker.branch) {
-            const br = String(worker.branch).toLowerCase()
-            if (br.includes('ichki')) return 'ichki'
-            if (br.includes('tashqi')) return 'tashqi'
-            if (br.includes('personal') || br.includes('manag') || br.includes('boss')) return 'personallar'
-            if (br.includes('buxg') || br.includes('admin')) return 'buxgalterlar'
+            return String(worker.branch).toLowerCase()
         }
 
-        // 3. Fallback to role
-        if (worker.role === 'worker') {
-            return worker.id % 2 === 0 ? 'ichki' : 'tashqi'
-        }
-        if (worker.role === 'manager' || worker.role === 'boss') {
-            return 'personallar'
-        }
-        if (worker.role === 'admin') {
-            return 'buxgalterlar'
-        }
-        return 'ichki'
+        return '';
     }
 
-    const ichkiAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'ichki')
-    const tashqiAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'tashqi')
-    const personallarAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'personallar')
-    const buxgalterlarAttendances = safeAttendances.filter(a => getAttendanceGroup(a) === 'buxgalterlar')
-
-    const chartIchki = charts.find(c => c.branch === 'Ichki_dokon' || c.branch === 'ichki_dokon')
-    const chartTashqi = charts.find(c => c.branch === 'Tashqi_dokon' || c.branch === 'tashqi_dokon')
-    const chartPersonal = charts.find(c => c.branch === 'personallar' || c.branch === 'personal')
-    const chartBuxgalter = charts.find(c => c.branch === 'buxgalterlar' || c.branch === 'buxgalter')
-
-    const ichkiRate = chartIchki?.rate || chartIchki?.percentage || chartIchki?.attendance_rate || (ichkiAttendances.length > 0
-        ? Math.round((ichkiAttendances.filter(a => a.status_kirish || a.is_success).length / ichkiAttendances.length) * 100)
-        : 0)
-    const tashqiRate = chartTashqi?.rate || chartTashqi?.percentage || chartTashqi?.attendance_rate || (tashqiAttendances.length > 0
-        ? Math.round((tashqiAttendances.filter(a => a.status_kirish || a.is_success).length / tashqiAttendances.length) * 100)
-        : 0)
-    const personallarRate = chartPersonal?.rate || chartPersonal?.percentage || chartPersonal?.attendance_rate || (personallarAttendances.length > 0
-        ? Math.round((personallarAttendances.filter(a => a.status_kirish || a.is_success).length / personallarAttendances.length) * 100)
-        : 0)
-    const buxgalterlarRate = chartBuxgalter?.rate || chartBuxgalter?.percentage || chartBuxgalter?.attendance_rate || (buxgalterlarAttendances.length > 0
-        ? Math.round((buxgalterlarAttendances.filter(a => a.status_kirish || a.is_success).length / buxgalterlarAttendances.length) * 100)
-        : 0)
-
     const modalEmployees = () => {
-        switch (modal) {
-            case 'ichki-dokon': return ichkiAttendances
-            case 'tashqi-dokon': return tashqiAttendances
-            case 'personallar': return personallarAttendances
-            case 'buxgalterlar': return buxgalterlarAttendances
-            case 'kelganlar': return safeAttendances.filter(isPresent)
-            case 'kechikkanlar': return safeAttendances.filter(isLate)
-            case 'kelmaganlar': return safeAttendances.filter(isAbsent)
-            default: return []
-        }
+        if (!modal) return []
+        if (modal === 'kelganlar') return safeAttendances.filter(isPresent)
+        if (modal === 'kechikkanlar') return safeAttendances.filter(isLate)
+        if (modal === 'kelmaganlar') return safeAttendances.filter(isAbsent)
+        
+        return safeAttendances.filter(a => {
+            const grp = getAttendanceGroup(a)
+            const normGrp = grp.replace(/[-_]/g, '')
+            const normModal = modal.replace(/[-_]/g, '')
+            return normGrp === normModal
+        })
     }
 
     const filteredAttendances = safeAttendances.filter((a) => {
         if (filter === 'Barchasi') return true
+        
+        const targetLavozim = lavozimlar.find(l => l.name === filter)
+        if (!targetLavozim) return true
+        
         const grp = getAttendanceGroup(a)
-        if (filter === "Ichki Do'kon") return grp === 'ichki'
-        if (filter === "Tashqi Do'kon") return grp === 'tashqi'
-        if (filter === "Personallar") return grp === 'personallar'
-        if (filter === "Buxgalterlar") return grp === 'buxgalterlar'
-        return true
+        const normGrp = grp.replace(/[-_]/g, '')
+        const normSlug = targetLavozim.slug.replace(/[-_]/g, '')
+        return normGrp === normSlug
     })
 
     return (
@@ -208,35 +165,21 @@ export default function DashboardPage() {
             </div>
 
             {/* Store cards row */}
-            <div className="grid grid-cols-4 gap-5">
-                <StoreCard
-                    title="Ichki Do'kon"
-                    subtitle="Ichki do'kon davomat foizi"
-                    percentage={ichkiRate}
-                    color="#f97316"
-                    onClick={() => setModal('ichki-dokon')}
-                />
-                <StoreCard
-                    title="Tashqi Do'kon"
-                    subtitle="Tashqi do'kon davomat foizi"
-                    percentage={tashqiRate}
-                    color="#22c55e"
-                    onClick={() => setModal('tashqi-dokon')}
-                />
-                <StoreCard
-                    title="Personallar"
-                    subtitle="Personallar davomat foizi"
-                    percentage={personallarRate}
-                    color="#a855f7"
-                    onClick={() => setModal('personallar')}
-                />
-                <StoreCard
-                    title="Buxgalterlar"
-                    subtitle="Buxgalterlar davomat foizi"
-                    percentage={buxgalterlarRate}
-                    color="#3b82f6"
-                    onClick={() => setModal('buxgalterlar')}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                {charts.map((chart, idx) => {
+                    const colors = ["#f97316", "#22c55e", "#a855f7", "#3b82f6", "#ec4899", "#06b6d4", "#eab308"];
+                    const color = colors[idx % colors.length];
+                    return (
+                        <StoreCard
+                            key={chart.branch}
+                            title={chart.name}
+                            subtitle={`${chart.name} davomat foizi`}
+                            percentage={chart.percentage ?? 0}
+                            color={color}
+                            onClick={() => setModal(chart.branch)}
+                        />
+                    );
+                })}
             </div>
 
             {/* Employees table */}
@@ -250,6 +193,7 @@ export default function DashboardPage() {
                 onSearchChange={setSearch}
                 filter={filter}
                 onFilterChange={setFilter}
+                filterOptions={['Barchasi', ...lavozimlar.map(l => l.name)]}
                 onWorkerClick={setSelectedWorkerId}
             />
 

@@ -36,6 +36,7 @@ export default function AddRoleModal({ open, onClose, onAdd }: AddRoleModalProps
             await inspectionService.createLavozim({
                 name: form.title.trim(),
                 description: form.principle.trim() || undefined,
+                show_in_diagram: form.showInDiagram,
             })
 
             toast.dismiss(loadId)

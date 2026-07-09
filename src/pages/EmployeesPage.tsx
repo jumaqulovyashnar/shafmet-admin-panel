@@ -25,6 +25,7 @@ interface DeptFolder {
     bgColor?: string
     iconColor?: string
     isDefault?: boolean
+    showInDiagram?: boolean
 }
 
 
@@ -59,7 +60,8 @@ function buildFoldersFromLavozimlar(lavozimlar: Lavozim[], workers: Worker[]): D
             icon: <Store size={28} />,
             bgColor: folderBgColors[idx % folderBgColors.length],
             iconColor: folderColors[idx % folderColors.length],
-            isDefault: lavozim.is_default || false
+            isDefault: lavozim.is_default || false,
+            showInDiagram: lavozim.show_in_diagram || false
         }
     })
 
@@ -365,22 +367,25 @@ export default function EmployeesPage() {
         if (department) setDeleteDepartment(department)
     }
 
-    const handleSaveEdit = async (key: string, newLabel: string) => {
+    const handleSaveEdit = async (key: string, newLabel: string, showInDiagram?: boolean) => {
         const isApiFolder = apiFolders.some((f) => f.key === key)
         if (isApiFolder) {
             try {
                 const lavozimId = parseInt(key, 10)
                 if (!isNaN(lavozimId)) {
-                    const loadId = toast.loading("Lavozim nomi o'zgartirilmoqda...")
-                    await inspectionService.updateLavozim(lavozimId, { name: newLabel.trim() })
+                    const loadId = toast.loading("Lavozim tahrirlanmoqda...")
+                    await inspectionService.updateLavozim(lavozimId, { 
+                        name: newLabel.trim(),
+                        show_in_diagram: showInDiagram,
+                    })
                     toast.dismiss(loadId)
-                    toast.success("Lavozim nomi muvaffaqiyatli o'zgartirildi!")
+                    toast.success("Lavozim muvaffaqiyatli tahrirlandi!")
                     refetchLavozimlar()
                 }
             } catch (error: any) {
                 toast.dismiss()
                 console.error("Lavozimni tahrirlashda xatolik:", error)
-                const errorMsg = error?.response?.data?.error || error?.response?.data?.detail || "Lavozim nomini o'zgartirib bo'lmadi"
+                const errorMsg = error?.response?.data?.error || error?.response?.data?.detail || "Lavozimni tahrirlab bo'lmadi"
                 toast.error(errorMsg)
             }
         } else {

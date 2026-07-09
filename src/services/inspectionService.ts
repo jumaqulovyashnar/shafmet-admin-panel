@@ -28,7 +28,7 @@ export const inspectionService = {
     return apiClient.get<any[]>(API_ENDPOINTS.LAVOZIM)
   },
 
-  async createLavozim(data: { name: string; description?: string }): Promise<any> {
+  async createLavozim(data: { name: string; description?: string; show_in_diagram?: boolean }): Promise<any> {
     return apiClient.post<any>(API_ENDPOINTS.LAVOZIM, data)
   },
 
@@ -36,7 +36,7 @@ export const inspectionService = {
     return apiClient.delete<void>(API_ENDPOINTS.LAVOZIM_BY_ID(id))
   },
 
-  async updateLavozim(id: number, data: { name: string; description?: string }): Promise<any> {
+  async updateLavozim(id: number, data: { name: string; description?: string; show_in_diagram?: boolean }): Promise<any> {
     return apiClient.patch<any>(API_ENDPOINTS.LAVOZIM_BY_ID(id), data)
   },
 

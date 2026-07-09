@@ -16,10 +16,11 @@ interface EmployeesTableProps {
     onSearchChange?: (search: string) => void
     filter?: string
     onFilterChange?: (filter: string) => void
+    filterOptions?: string[]
     onWorkerClick?: (workerId: number) => void
 }
 
-const FILTERS = ['Barchasi', 'Ichki Do\'kon', 'Tashqi Do\'kon', 'Personallar', 'Buxgalterlar']
+const DEFAULT_FILTERS = ['Barchasi', 'Ichki Do\'kon', 'Tashqi Do\'kon', 'Personallar', 'Buxgalterlar']
 
 
 
@@ -33,6 +34,7 @@ export default function EmployeesTable({
     onSearchChange,
     filter = 'Barchasi',
     onFilterChange,
+    filterOptions,
     onWorkerClick
 }: EmployeesTableProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -98,7 +100,7 @@ export default function EmployeesTable({
                         </button>
                         {isDropdownOpen && (
                             <div className="absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-40 py-1">
-                                {FILTERS.map((f) => (
+                                {(filterOptions || DEFAULT_FILTERS).map((f) => (
                                     <button
                                         key={f}
                                         onClick={() => {

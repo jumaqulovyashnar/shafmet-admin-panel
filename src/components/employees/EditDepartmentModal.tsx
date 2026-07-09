@@ -6,22 +6,24 @@ import { Button } from '@/components/ui/button'
 interface EditDepartmentModalProps {
     open: boolean
     onClose: () => void
-    department: { key: string; label: string; count: number } | null
-    onSave: (key: string, newLabel: string) => void
+    department: { key: string; label: string; count: number; showInDiagram?: boolean } | null
+    onSave: (key: string, newLabel: string, showInDiagram: boolean) => void
 }
 
 export default function EditDepartmentModal({ open, onClose, department, onSave }: EditDepartmentModalProps) {
     const [label, setLabel] = useState('')
+    const [showInDiagram, setShowInDiagram] = useState(false)
 
     useEffect(() => {
         if (department) {
             setLabel(department.label)
+            setShowInDiagram(department.showInDiagram || false)
         }
     }, [department])
 
     const handleSave = () => {
         if (department && label.trim()) {
-            onSave(department.key, label.trim())
+            onSave(department.key, label.trim(), showInDiagram)
             onClose()
         }
     }
@@ -47,6 +49,24 @@ export default function EditDepartmentModal({ open, onClose, department, onSave 
                             onChange={(e) => setLabel(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                         />
+                    </div>
+
+                    {/* Diagrammada ko'rinishi toggle */}
+                    <div className="flex items-center justify-between bg-[#e3f2fd] rounded-xl px-4 py-3.5">
+                        <span className="text-[13px] text-gray-700 font-medium">
+                            Diagrammada Ko'rinishi
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => setShowInDiagram(!showInDiagram)}
+                            className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${showInDiagram ? 'bg-[#64b5f6]' : 'bg-gray-300'
+                                }`}
+                        >
+                            <span
+                                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${showInDiagram ? 'left-5' : 'left-0.5'
+                                    }`}
+                            />
+                        </button>
                     </div>
 
                     <div className="bg-gray-50 rounded-lg p-3">

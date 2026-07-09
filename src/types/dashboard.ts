@@ -22,12 +22,4 @@ export interface Task {
     isPermanent: boolean
 }
 
-export type ModalType =
-    | 'ichki-dokon'
-    | 'tashqi-dokon'
-    | 'personallar'
-    | 'buxgalterlar'
-    | 'kelganlar'
-    | 'kechikkanlar'
-    | 'kelmaganlar'
-    | null
+export type ModalType = string | null

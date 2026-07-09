@@ -9,6 +9,7 @@ export interface Lavozim {
   code?: string
   description?: string
   is_default?: boolean
+  show_in_diagram?: boolean
 }
 
 
