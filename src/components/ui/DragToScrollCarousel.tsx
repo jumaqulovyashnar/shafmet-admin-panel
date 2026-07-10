@@ -10,6 +10,7 @@ export default function DragToScrollCarousel({ children, className = '' }: DragT
     const containerRef = useRef<HTMLDivElement>(null)
     const [showLeftArrow, setShowLeftArrow] = useState(false)
     const [showRightArrow, setShowRightArrow] = useState(false)
+    const [isOverflowing, setIsOverflowing] = useState(false)
     
     const isDown = useRef(false)
     const startX = useRef(0)
@@ -20,6 +21,8 @@ export default function DragToScrollCarousel({ children, className = '' }: DragT
     const updateArrows = useCallback(() => {
         if (!containerRef.current) return
         const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
+        
+        setIsOverflowing(scrollWidth > clientWidth)
         
         // Show left arrow if scrolled more than 5px
         setShowLeftArrow(scrollLeft > 5)
@@ -145,7 +148,9 @@ export default function DragToScrollCarousel({ children, className = '' }: DragT
             {/* Main scrollable container */}
             <div
                 ref={containerRef}
-                className={`flex gap-5 overflow-x-auto overflow-y-hidden no-scrollbar select-none snap-x snap-mandatory ${className}`}
+                className={`flex overflow-x-auto overflow-y-hidden no-scrollbar select-none snap-x snap-mandatory ${
+                    isOverflowing ? 'justify-start gap-[11px]' : 'justify-center md:justify-around gap-6'
+                } ${className}`}
                 style={{
                     cursor: 'grab',
                     WebkitOverflowScrolling: 'touch',

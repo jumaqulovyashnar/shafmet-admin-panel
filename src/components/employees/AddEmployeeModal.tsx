@@ -275,11 +275,11 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation, defau
             </div>
 
             {/* ---- Submit ---- */}
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-6 pb-2">
               <Button
                 onClick={handleCreate}
                 disabled={submitting}
-                className="bg-[#64b5f6] hover:bg-[#42a5f5] h-10 px-8 rounded-xl text-[13px] font-semibold text-white cursor-pointer gap-2"
+                className="h-10 px-8 gap-2"
               >
                 {submitting && <Loader2 size={14} className="animate-spin" />}
                 {submitting ? 'Yaratilmoqda...' : 'Yaratish'}

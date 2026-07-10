@@ -73,18 +73,18 @@ export default function EmployeesTable({
     return (
         <div className="bg-white rounded-xl p-5">
             {/* Header */}
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                 <div>
                     <h3 className="font-semibold text-gray-900">Davomat Tarixi</h3>
                     <p className="text-xs text-[#64b5f6] mt-0.5">barcha davomatlar ({attendances.length} ta)</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
                     {/* Search */}
-                    <div className="relative">
+                    <div className="relative flex-1 sm:flex-initial">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                         <Input
                             placeholder="Qidirish"
-                            className="pl-8 h-8 text-xs w-44"
+                            className="pl-8 h-8 text-xs w-full sm:w-44"
                             value={search}
                             onChange={(e) => onSearchChange?.(e.target.value)}
                         />
@@ -93,7 +93,7 @@ export default function EmployeesTable({
                     <div className="relative">
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-3 h-8 text-gray-600 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-3 h-8 text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap"
                         >
                             Tanlash: {filter}
                             <ChevronDown size={12} />
@@ -121,11 +121,11 @@ export default function EmployeesTable({
 
             {/* Table */}
             <div className="overflow-x-auto mt-4">
-                <table className="w-full table-fixed text-sm">
+                <table className="w-full table-fixed min-w-[850px] text-sm">
                     <thead>
                         <tr className="border-b border-gray-100 h-12">
-                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Rasm</th>
-                            <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Ism</th>
+                            <th className="w-[6%] text-left pl-3 py-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Rasm</th>
+                            <th className="w-[14%] text-left pl-2 py-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Ism</th>
                             <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Sana</th>
                             <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Kelgan vaqt</th>
                             <th className="w-[10%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Turi</th>
@@ -149,15 +149,15 @@ export default function EmployeesTable({
                             ))
                             : paginatedAttendances.map((a, idx) => {
                                 const avatarUrl = getAbsoluteImageUrl(a.rasm)
-
+ 
                                 return (
                                     <tr
                                         key={a.id || idx}
                                         onClick={() => a.user && onWorkerClick?.(a.user)}
                                         className="border-b border-gray-50 h-12 hover:bg-[#e3f2fd] transition-colors cursor-pointer"
                                     >
-                                        <td className="py-1.5 px-2 text-center align-middle">
-                                            <div className="flex justify-center items-center">
+                                        <td className="py-1.5 pl-3 text-left align-middle">
+                                            <div className="flex justify-start items-center">
                                                 {avatarUrl ? (
                                                     <img
                                                         src={avatarUrl}
@@ -171,8 +171,8 @@ export default function EmployeesTable({
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="py-1.5 px-2 text-center align-middle">
-                                            <span className="font-semibold text-gray-800 text-[12px] truncate block max-w-[90px] mx-auto" title={a.ism || `User #${a.user}`}>
+                                        <td className="py-1.5 pl-2 text-left align-middle">
+                                            <span className="font-semibold text-gray-800 text-[12px] truncate block max-w-[120px]" title={a.ism || `User #${a.user}`}>
                                                 {a.ism || `User #${a.user}`}
                                             </span>
                                         </td>

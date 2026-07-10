@@ -384,7 +384,7 @@ export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="max-w-[1300px] max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl bg-white border-0 shadow-2xl" hideClose>
+            <DialogContent className="w-[calc(100%-24px)] md:w-full md:max-w-[1300px] max-h-[92vh] overflow-y-auto md:overflow-hidden flex flex-col p-0 gap-0 rounded-2xl bg-white border-0 shadow-2xl" hideClose>
                 {/* Close Button */}
                 <button
                     onClick={onClose}
@@ -399,9 +399,9 @@ export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate
                         <span className="text-gray-500 text-sm font-medium">Xodim ma'lumotlari yuklanmoqda...</span>
                     </div>
                 ) : (
-                    <div className="flex flex-1 overflow-hidden h-[85vh]">
+                    <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden md:h-[85vh]">
                         {/* LEFT SIDEBAR */}
-                        <div className="w-[240px] shrink-0 bg-white border-r border-gray-100 flex flex-col items-center pt-10 pb-6 px-5 select-none">
+                        <div className="w-full md:w-[240px] shrink-0 bg-white border-b md:border-b-0 md:border-r border-gray-100 flex flex-col items-center pt-8 pb-6 px-5 select-none">
                             {/* Avatar */}
                             <div className="relative mb-4 group">
                                 <Avatar className="w-24 h-24 border-4 border-gray-50 shadow-md">
@@ -471,17 +471,16 @@ export default function EmployeeProfileModal({ open, onClose, workerId, onUpdate
                         </div>
 
                         {/* MAIN CONTENT */}
-                        <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
-                            {/* Stats Row */}
-                            <div className="grid grid-cols-4 gap-4 px-6 pt-6 pb-4 select-none">
+                        <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">                            {/* Stats Row */}
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:px-6 md:pt-6 md:pb-4 select-none">
                                 <StatCard icon={Calendar} label="Kelgan kunlar" value={stats.presentDays} subtitle="Shu oy" iconColor="text-blue-500" iconBg="bg-blue-50" />
                                 <StatCard icon={Clock} label="Kechikishlar" value={stats.lateDays} subtitle="Shu oy" iconColor="text-amber-500" iconBg="bg-amber-50" />
                                 <StatCard icon={CheckCheck} label="Bajarilgan vazifalar" value={tasks.filter(t => t.status === 'completed').length} subtitle="Shu oy" iconColor="text-green-500" iconBg="bg-green-50" />
                                 <StatCard icon={Wallet} label="Joriy balans" value={`${stats.balance.toLocaleString()} so'm`} subtitle="" iconColor="text-purple-500" iconBg="bg-purple-50" />
                             </div>
-
+ 
                             {/* Tabs */}
-                            <div className="border-b border-gray-200 bg-white px-6">
+                            <div className="border-b border-gray-200 bg-white px-4 md:px-6 overflow-x-auto flex-nowrap scrollbar-none">
                                 <div className="flex gap-0">
                                     {TABS.map((tab) => (
                                         <button

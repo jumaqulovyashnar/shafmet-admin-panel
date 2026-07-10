@@ -89,7 +89,7 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
 
             {/* Right */}
             {location.pathname !== '/geo' && (
-                <div className="flex items-center gap-3 mr-12">
+                <div className="hidden md:flex items-center gap-3 mr-12">
                     {/* Filtr with date picker */}
                     <div className="relative">
                         <input

@@ -107,18 +107,18 @@ export default function DashboardPage() {
     return (
         <div className="space-y-5">
             {/* Stat cards row - combined into single card with dividers */}
-            <div className="bg-white rounded-xl px-5 py-4 flex items-center divide-x divide-gray-300" style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            <div className="bg-white rounded-xl px-5 py-2 md:py-4 flex flex-col md:flex-row items-stretch md:items-center divide-y md:divide-y-0 md:divide-x divide-gray-200 md:divide-gray-300" style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
                 {/* Card 1 */}
                 <div
                     onClick={() => setModal('kelganlar')}
-                    className="flex items-center gap-4 flex-1 pr-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
+                    className="flex items-center gap-4 flex-1 py-4 md:py-0 md:pr-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
                 >
-                    <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                        <img src={images.profile1} alt="" className="w-8 h-8" />
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <img src={images.profile1} alt="" className="w-7 h-7 md:w-8 md:h-8" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga Kelganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{summary?.present?.count ?? onTimeCount}</p>
+                        <p className="text-xl md:text-2xl font-bold text-gray-900">{summary?.present?.count ?? onTimeCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-emerald-600">
                             {(summary?.present?.trend_percentage ?? 18) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                             <span>{Math.abs(summary?.present?.trend_percentage ?? 18)}% o'tgan oyga nbt</span>
@@ -129,14 +129,14 @@ export default function DashboardPage() {
                 {/* Card 2 */}
                 <div
                     onClick={() => setModal('kechikkanlar')}
-                    className="flex items-center gap-4 flex-1 px-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
+                    className="flex items-center gap-4 flex-1 py-4 md:py-0 md:px-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
                 >
-                    <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                        <img src={images.profile2} alt="" className="w-8 h-8" />
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <img src={images.profile2} alt="" className="w-7 h-7 md:w-8 md:h-8" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Ishga kechikganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{summary?.late?.count ?? lateCount}</p>
+                        <p className="text-xl md:text-2xl font-bold text-gray-900">{summary?.late?.count ?? lateCount}</p>
                         <div className="flex items-center gap-1 text-xs mt-0.5 text-red-500">
                             {(summary?.late?.trend_percentage ?? 1) >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                             <span>{Math.abs(summary?.late?.trend_percentage ?? 1)}% o'tgan oyga nbt</span>
@@ -147,14 +147,14 @@ export default function DashboardPage() {
                 {/* Card 3 */}
                 <div
                     onClick={() => setModal('kelmaganlar')}
-                    className="flex items-center gap-4 flex-1 pl-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
+                    className="flex items-center gap-4 flex-1 py-4 md:py-0 md:pl-5 cursor-pointer hover:opacity-80 transition-all duration-500 ease-in-out"
                 >
-                    <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                        <img src={images.profile3} alt="" className="w-8 h-8" />
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <img src={images.profile3} alt="" className="w-7 h-7 md:w-8 md:h-8" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Kelmaganlar</p>
-                        <p className="text-2xl font-bold text-gray-900">{summary?.absent?.count ?? absentCount}</p>
+                        <p className="text-xl md:text-2xl font-bold text-gray-900">{summary?.absent?.count ?? absentCount}</p>
                         {summary?.absent?.trend_percentage !== undefined && (
                             <div className="flex items-center gap-1 text-xs mt-0.5 text-gray-500">
                                 {summary.absent.trend_percentage >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
@@ -188,7 +188,7 @@ export default function DashboardPage() {
                             const colors = ["#f97316", "#22c55e", "#a855f7", "#3b82f6", "#ec4899", "#06b6d4", "#eab308"];
                             const color = colors[idx % colors.length];
                             return (
-                                <div key={chart.branch} className="w-[300px] sm:w-[350px] flex-shrink-0 snap-start">
+                                <div key={chart.branch} className="w-full sm:w-[350px] flex-shrink-0 snap-center">
                                     <StoreCard
                                         title={chart.name}
                                         subtitle={`${chart.name} davomat foizi`}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { SlidersHorizontal, Search, Folder, Store, Users, Pencil, Trash2, ShieldPlus, Loader2 } from 'lucide-react'
+import { Search, Folder, Store, Users, Pencil, Trash2, ShieldPlus, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Pagination from '@/components/ui/pagination'
@@ -457,7 +457,7 @@ export default function EmployeesPage() {
     return (
         <div className="space-y-4">
             {/* Top bar */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
                 <div className="w-48">
                     <Button
                         onClick={() => setShowAddRole(true)}
@@ -467,10 +467,6 @@ export default function EmployeesPage() {
                         <span>Lavozim yaratish</span>
                     </Button>
                 </div>
-
-                <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
-                    <SlidersHorizontal size={15} />
-                </button>
             </div>
 
             {/* Content */}

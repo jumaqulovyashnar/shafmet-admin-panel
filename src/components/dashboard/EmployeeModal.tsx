@@ -273,7 +273,7 @@ export default function EmployeeModal({ open, onClose, type, attendances, onWork
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-[1020px] min-w-[1020px] max-h-[90vh] overflow-hidden flex flex-col p-6">
+      <DialogContent className="w-[calc(100%-24px)] md:w-full md:max-w-[1020px] md:min-w-[1020px] max-h-[90vh] overflow-hidden flex flex-col p-4 md:p-6">
         <DialogHeader>
           <DialogTitle>{cfg.title}</DialogTitle>
           <DialogDescription className={`font-semibold text-sm ${cfg.subColor}`}>
@@ -304,8 +304,8 @@ export default function EmployeeModal({ open, onClose, type, attendances, onWork
         </div>
 
         {/* Table */}
-        <div className="overflow-y-auto flex-1 min-h-0">
-          <table className="w-full table-fixed text-sm">
+        <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
+          <table className="w-full table-fixed min-w-[950px] text-sm">
             <thead className="sticky top-0 bg-white">
               <tr className="border-b border-gray-100 h-12">
                 <th className="w-[8%] text-center py-2 px-2 text-xs font-semibold text-gray-400 whitespace-nowrap align-middle">Rasm</th>

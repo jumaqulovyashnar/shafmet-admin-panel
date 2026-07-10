@@ -79,7 +79,7 @@ export default function TasksPage() {
                     <span className="ml-3 text-gray-500">Yuklanmoqda...</span>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {departments.map((dept) => (
                         <button
                             key={dept.key}

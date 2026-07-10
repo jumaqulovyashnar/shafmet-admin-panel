@@ -54,7 +54,7 @@ export default function TasksEmployeeModal({ open, onClose, title, workers }: Ta
     return (
         <>
             <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-                <DialogContent className="max-w-3xl min-w-[768px] max-h-[90vh] overflow-hidden flex flex-col p-6">
+                <DialogContent className="w-[calc(100%-24px)] md:w-full md:max-w-3xl md:min-w-[768px] max-h-[90vh] overflow-hidden flex flex-col p-4 md:p-6">
                     <DialogHeader>
                         <DialogTitle>{title}</DialogTitle>
                         <DialogDescription className="text-blue-600 font-semibold text-sm">
@@ -85,8 +85,8 @@ export default function TasksEmployeeModal({ open, onClose, title, workers }: Ta
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-y-auto flex-1 min-h-0">
-                        <table className="w-full text-sm">
+                    <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
+                        <table className="w-full min-w-[700px] text-sm">
                             <thead className="sticky top-0 bg-white">
                                 <tr className="border-b border-gray-100">
                                     <th className="text-left py-2 px-3 text-xs font-medium text-gray-400">Ism Familiyasi</th>

@@ -155,15 +155,15 @@ export default function GeoPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                         <MapPin className="text-blue-500 w-5 h-5" />
                         Geolokatsiya Hududlari (Zones)
                     </h2>
-                    <p className="text-xs text-gray-500 mt-1">Xodimlarning kelib-ketishini tasdiqlash uchun ruxsat berilgan hududlar ro'yxati</p>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">Xodimlarning kelib-ketishini tasdiqlash uchun ruxsat berilgan hududlar ro'yxati</p>
                 </div>
-                <Button onClick={handleOpenCreate} className="gap-2 transition-all hover:scale-[1.02]">
+                <Button onClick={handleOpenCreate} className="gap-2 transition-all hover:scale-[1.02] w-full sm:w-auto">
                     <Plus size={16} />
                     Yangi hudud qo'shish
                 </Button>
@@ -203,11 +203,21 @@ export default function GeoPage() {
                                 <div className="space-y-2 mb-6">
                                     <div className="flex justify-between text-xs border-b border-gray-50 pb-1.5">
                                         <span className="text-gray-400 font-medium">Kenglik (Latitude)</span>
-                                        <span className="text-gray-800 font-semibold">{zone.lat || (zone as any).latitude || '-'}</span>
+                                        <span className="text-gray-800 font-semibold">
+                                            {(() => {
+                                                const val = zone.lat || (zone as any).latitude;
+                                                return val != null && !isNaN(Number(val)) ? Number(val).toFixed(6) : '-';
+                                            })()}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between text-xs border-b border-gray-50 pb-1.5">
                                         <span className="text-gray-400 font-medium">Uzunlik (Longitude)</span>
-                                        <span className="text-gray-800 font-semibold">{zone.lng || (zone as any).longitude || '-'}</span>
+                                        <span className="text-gray-800 font-semibold">
+                                            {(() => {
+                                                const val = zone.lng || (zone as any).longitude;
+                                                return val != null && !isNaN(Number(val)) ? Number(val).toFixed(6) : '-';
+                                            })()}
+                                        </span>
                                     </div>
                                     { (zone.radius ?? (zone as any).allowed_radius ?? (zone as any).distance) != null && (
                                         <div className="flex justify-between text-xs pb-1.5">
@@ -324,7 +334,7 @@ export default function GeoPage() {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
-                                    className={`w-10 h-6 rounded-full p-0.5 transition-colors cursor-pointer ${form.is_active ? 'bg-green-500' : 'bg-gray-200'}`}
+                                    className={`w-10 h-6 rounded-full p-0.5 transition-colors cursor-pointer ${form.is_active ? 'bg-[#1976d2]' : 'bg-gray-200'}`}
                                 >
                                     <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${form.is_active ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                 </button>

@@ -151,7 +151,7 @@ export default function SchedulesPage() {
   return (
     <div className="min-h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#e3f2fd] flex items-center justify-center">
             <Clock size={20} className="text-[#1976d2]" />
@@ -164,7 +164,7 @@ export default function SchedulesPage() {
           </div>
         </div>
 
-        <Button onClick={openCreateModal} className="gap-2 rounded-xl text-sm font-semibold px-5">
+        <Button onClick={openCreateModal} className="gap-2 rounded-xl text-sm font-semibold px-5 w-full sm:w-auto">
           <Plus size={16} />
           Yangi Jadval
         </Button>
