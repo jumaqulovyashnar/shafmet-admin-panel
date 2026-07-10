@@ -166,23 +166,42 @@ export default function DashboardPage() {
             </div>
 
             {/* Store cards row — drag to scroll horizontally */}
-            <DragToScrollCarousel className="pb-2">
-                {charts.map((chart, idx) => {
-                    const colors = ["#f97316", "#22c55e", "#a855f7", "#3b82f6", "#ec4899", "#06b6d4", "#eab308"];
-                    const color = colors[idx % colors.length];
-                    return (
-                        <div key={chart.branch} className="min-w-[280px] sm:min-w-[300px] flex-shrink-0 flex-1">
-                            <StoreCard
-                                title={chart.name}
-                                subtitle={`${chart.name} davomat foizi`}
-                                percentage={chart.percentage ?? 0}
-                                color={color}
-                                onClick={() => setModal(chart.branch)}
-                            />
-                        </div>
-                    );
-                })}
-            </DragToScrollCarousel>
+            {(() => {
+                const displayCharts = [...charts]
+                lavozimlar.forEach(lavozim => {
+                    const exists = charts.some(c => 
+                        (c.branch && c.branch.toLowerCase() === lavozim.slug?.toLowerCase()) || 
+                        (c.name && c.name.toLowerCase() === lavozim.name?.toLowerCase())
+                    )
+                    if (!exists) {
+                        displayCharts.push({
+                            branch: lavozim.slug || String(lavozim.id),
+                            name: lavozim.name,
+                            percentage: 0
+                        })
+                    }
+                })
+
+                return (
+                    <DragToScrollCarousel className="pb-2">
+                        {displayCharts.map((chart, idx) => {
+                            const colors = ["#f97316", "#22c55e", "#a855f7", "#3b82f6", "#ec4899", "#06b6d4", "#eab308"];
+                            const color = colors[idx % colors.length];
+                            return (
+                                <div key={chart.branch} className="w-[300px] sm:w-[350px] flex-shrink-0 snap-start">
+                                    <StoreCard
+                                        title={chart.name}
+                                        subtitle={`${chart.name} davomat foizi`}
+                                        percentage={chart.percentage ?? 0}
+                                        color={color}
+                                        onClick={() => setModal(chart.branch)}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </DragToScrollCarousel>
+                )
+            })()}
 
             {/* Employees table */}
             <EmployeesTable 

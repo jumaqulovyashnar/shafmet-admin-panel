@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { SlidersHorizontal, Search, Folder, Store, Users, Pencil, Trash2, ShieldPlus, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import Pagination from '@/components/ui/pagination'
 import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import AddRoleModal from '@/components/employees/AddRoleModal'
@@ -128,7 +129,7 @@ function FolderList({
             {folders.map((d, idx) => (
                 <div
                     key={d.key}
-                    className="bg-white rounded-2xl p-6 hover:shadow-md transition-all group border border-transparent hover:border-blue-100 flex flex-col"
+                    className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all group border border-gray-100 hover:border-blue-200 flex flex-col"
                 >
                     {/* Icon and Content */}
                     <button
@@ -458,13 +459,13 @@ export default function EmployeesPage() {
             {/* Top bar */}
             <div className="flex items-center justify-between">
                 <div className="w-48">
-                    <button
+                    <Button
                         onClick={() => setShowAddRole(true)}
-                        className="w-full flex items-center justify-center gap-2 bg-[#64b5f6] hover:bg-[#42a5f5] text-white px-4 py-2.5 text-[13px] font-semibold transition-colors rounded-xl shadow-sm"
+                        className="w-full gap-2"
                     >
                         <ShieldPlus size={16} />
                         <span>Lavozim yaratish</span>
-                    </button>
+                    </Button>
                 </div>
 
                 <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">

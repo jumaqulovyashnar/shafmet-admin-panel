@@ -18,11 +18,9 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Asosiy Sahifa', icon: <img src={icons.key} alt="" className="w-5 h-5 object-contain" />, href: '/dashboard' },
   { label: 'Topshiriqlar', icon: <img src={icons.box} alt="" className="w-5 h-5 object-contain" />, href: '/tasks' },
-  { label: "Ishchi Qo'shish", icon: <Users size={20} className="w-5 h-5" />, href: '/employees' },
-  { label: 'Tolovlar', icon: <img src={icons.wallet} alt="" className="w-5 h-5 object-contain" />, href: '/payments' },
+  { label: "Lavozim qo'shish", icon: <Users size={20} className="w-5 h-5" />, href: '/employees' },
   { label: 'Geolokatsiya', icon: <img src={icons.circle} alt="" className="w-5 h-5 object-contain" />, href: '/geo' },
   { label: 'Ish Jadvali', icon: <Clock size={20} className="w-5 h-5" />, href: '/schedules' },
-  { label: "Maxsus Bo'lim", icon: <img src={icons.support} alt="" className="w-5 h-5 object-contain" />, href: '/departments' },
 ]
 
 interface SidebarProps {

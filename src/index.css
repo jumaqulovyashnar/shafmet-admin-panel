@@ -191,3 +191,28 @@
   -ms-overflow-style: none !important;  /* IE and Edge */
   scrollbar-width: none !important;  /* Firefox */
 }
+
+/* Hover Scrollbar custom implementation */
+.hover-scrollbar::-webkit-scrollbar {
+  height: 6px !important;
+  background: transparent !important;
+}
+
+.hover-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  border-radius: 10px !important;
+  transition: background 0.3s ease-in-out !important;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4) !important; /* Elegant gray-400 opacity */
+}
+
+.hover-scrollbar {
+  -ms-overflow-style: none !important; /* IE/Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+.hover-scrollbar:hover {
+  scrollbar-width: thin !important; /* Firefox show on hover */
+}

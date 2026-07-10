@@ -163,7 +163,7 @@ export default function GeoPage() {
                     </h2>
                     <p className="text-xs text-gray-500 mt-1">Xodimlarning kelib-ketishini tasdiqlash uchun ruxsat berilgan hududlar ro'yxati</p>
                 </div>
-                <Button onClick={handleOpenCreate} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl gap-2 font-semibold text-xs h-9 cursor-pointer">
+                <Button onClick={handleOpenCreate} className="gap-2 transition-all hover:scale-[1.02]">
                     <Plus size={16} />
                     Yangi hudud qo'shish
                 </Button>
@@ -242,11 +242,11 @@ export default function GeoPage() {
                             </a>
 
                             <div className="flex gap-2">
-                                <Button onClick={() => handleOpenEdit(zone)} variant="outline" size="sm" className="flex-1 text-xs gap-1.5 rounded-xl cursor-pointer">
+                                <Button onClick={() => handleOpenEdit(zone)} variant="outline" size="sm" className="flex-1 gap-1.5">
                                     <Edit2 size={12} />
                                     Tahrirlash
                                 </Button>
-                                <Button onClick={() => handleDeleteZone(zone.id)} variant="outline" size="sm" className="text-xs text-red-600 border-red-100 hover:bg-red-50 gap-1.5 rounded-xl cursor-pointer">
+                                <Button onClick={() => handleDeleteZone(zone.id)} variant="outline" size="sm" className="flex-1 text-red-600 border-red-100 hover:bg-red-50 gap-1.5">
                                     <Trash2 size={12} />
                                     O'chirish
                                 </Button>

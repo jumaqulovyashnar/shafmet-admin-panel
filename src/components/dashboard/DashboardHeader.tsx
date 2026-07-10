@@ -19,12 +19,10 @@ const deptLabels: Record<string, string> = {
 function getBreadcrumbs(pathname: string, lavozimlar: Lavozim[]): Crumb[] {
     if (pathname === '/dashboard') return [{ label: 'Asosiy Sahifa' }]
     if (pathname === '/tasks') return [{ label: 'Topshiriqlar' }]
-    if (pathname === '/payments') return [{ label: 'Tolovlar' }]
     if (pathname === '/geo') return [{ label: 'Geolokatsiya' }]
     if (pathname === '/schedules') return [{ label: 'Ish Jadvali' }]
-    if (pathname === '/departments') return [{ label: "Maxsus Bo'lim" }]
 
-    if (pathname === '/employees') return [{ label: "Ishchi Qo'shish" }]
+    if (pathname === '/employees') return [{ label: "Lavozim qo'shish" }]
 
     const deptMatch = pathname.match(/^\/employees\/(\w+)$/)
     if (deptMatch) {
@@ -39,7 +37,7 @@ function getBreadcrumbs(pathname: string, lavozimlar: Lavozim[]): Crumb[] {
         }
 
         return [
-            { label: "Ishchi Qo'shish", href: '/employees' },
+            { label: "Lavozim qo'shish", href: '/employees' },
             { label },
         ]
     }
