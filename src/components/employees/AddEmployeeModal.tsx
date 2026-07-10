@@ -147,11 +147,11 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation, defau
   // ---- Render ----
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+      <DialogContent className="max-w-md max-h-[92vh] md:max-h-[95vh] overflow-y-auto rounded-2xl p-0">
         {/* Top gradient strip */}
         <div className="h-1.5 bg-gradient-to-r from-[#42a5f5] via-[#64b5f6] to-[#90caf9]" />
 
-        <div className="p-6">
+        <div className="px-6 pt-6 pb-6">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-gray-900">
               Yangi Xodim{' '}
@@ -162,7 +162,7 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation, defau
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 mt-5">
+          <div className="space-y-3 mt-4">
             {/* ---- Photo Upload ---- */}
             <div className="flex flex-col items-center justify-center pb-2">
               <input
@@ -275,7 +275,7 @@ export default function AddEmployeeModal({ open, onClose, defaultLocation, defau
             </div>
 
             {/* ---- Submit ---- */}
-            <div className="flex justify-end pt-6 pb-2">
+            <div className="flex justify-end pt-4 pb-0">
               <Button
                 onClick={handleCreate}
                 disabled={submitting}
