@@ -171,7 +171,7 @@ export default function DashboardPage() {
                     const colors = ["#f97316", "#22c55e", "#a855f7", "#3b82f6", "#ec4899", "#06b6d4", "#eab308"];
                     const color = colors[idx % colors.length];
                     return (
-                        <div key={chart.branch} className="min-w-[220px] flex-shrink-0 flex-1">
+                        <div key={chart.branch} className="min-w-[280px] sm:min-w-[300px] flex-shrink-0 flex-1">
                             <StoreCard
                                 title={chart.name}
                                 subtitle={`${chart.name} davomat foizi`}
