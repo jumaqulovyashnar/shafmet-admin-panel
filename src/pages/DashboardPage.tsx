@@ -4,6 +4,7 @@ import StoreCard from '@/components/dashboard/StoreCard'
 import EmployeesTable from '@/components/dashboard/EmployeesTable'
 import EmployeeModal from '@/components/dashboard/EmployeeModal'
 import EmployeeProfileModal from '@/components/dashboard/EmployeeProfileModal'
+import DragToScrollCarousel from '@/components/ui/DragToScrollCarousel'
 import { images } from '@/api/constant/images'
 import type { ModalType } from '@/types/dashboard'
 import { useAttendances } from '@/hooks/useAttendances'
@@ -164,23 +165,24 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Store cards row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+            {/* Store cards row — drag to scroll horizontally */}
+            <DragToScrollCarousel className="pb-2">
                 {charts.map((chart, idx) => {
                     const colors = ["#f97316", "#22c55e", "#a855f7", "#3b82f6", "#ec4899", "#06b6d4", "#eab308"];
                     const color = colors[idx % colors.length];
                     return (
-                        <StoreCard
-                            key={chart.branch}
-                            title={chart.name}
-                            subtitle={`${chart.name} davomat foizi`}
-                            percentage={chart.percentage ?? 0}
-                            color={color}
-                            onClick={() => setModal(chart.branch)}
-                        />
+                        <div key={chart.branch} className="min-w-[220px] flex-shrink-0 flex-1">
+                            <StoreCard
+                                title={chart.name}
+                                subtitle={`${chart.name} davomat foizi`}
+                                percentage={chart.percentage ?? 0}
+                                color={color}
+                                onClick={() => setModal(chart.branch)}
+                            />
+                        </div>
                     );
                 })}
-            </div>
+            </DragToScrollCarousel>
 
             {/* Employees table */}
             <EmployeesTable 
