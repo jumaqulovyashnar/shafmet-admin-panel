@@ -1,4 +1,4 @@
-import { Search, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { useLocation, Link } from 'react-router-dom'
 import { useLavozimlar } from '@/hooks/useLavozimlar'
 import type { Lavozim } from '@/hooks/useLavozimlar'
@@ -87,29 +87,7 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             </nav>
             </div>
 
-            {/* Right */}
-            {location.pathname !== '/geo' && (
-                <div className="hidden md:flex items-center gap-3 mr-12">
-                    {/* Filtr with date picker */}
-                    <div className="relative">
-                        <input
-                            type="date"
-                            className="flex items-center gap-2 text-[13px] text-gray-700 border border-gray-200 rounded-xl px-5 h-9 hover:bg-gray-50 transition-colors min-w-[160px] cursor-pointer"
-                            style={{ colorScheme: 'light' }}
-                        />
-                    </div>
 
-                    {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                        <input
-                            type="text"
-                            placeholder="Qidirish"
-                            className="h-9 pl-9 pr-4 text-[13px] border border-gray-200 rounded-xl outline-none focus:border-[#64b5f6] transition-colors w-56"
-                        />
-                    </div>
-                </div>
-            )}
         </header>
     )
 }

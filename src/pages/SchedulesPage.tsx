@@ -188,7 +188,7 @@ export default function SchedulesPage() {
 
       {/* Schedule Cards Grid */}
       {!loading && schedules.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
           {schedules.map((schedule) => (
             <div
               key={schedule.id}
